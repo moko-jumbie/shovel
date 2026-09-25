@@ -1,0 +1,1502 @@
+//+------------------------------------------------------------------+
+//|                            HMA_Crossover_Smart_Run4_FIXED        |
+//|                    Based on v3.0 — 9 Issues Resolved              |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2026, AI Assistant — v4 Fixes"
+#property version   "4.00"
+#property strict
+
+//+------------------------------------------------------------------+
+//| FIX LOG:                                                          |
+//| FIX-1: Daily loss limit now ENFORCED in OnTick                    |
+//| FIX-2: Consecutive loss counter — reduces risk after streaks      |
+//| FIX-3: Default risk lowered from 2.0% to 1.0%                    |
+//| FIX-4: Trailing stop tightened (3.0 activation / 1.5 cushion)    |
+//| FIX-5: HMA periods widened (20/30) to reduce whipsaws            |
+//| FIX-6: Re-entry cooldown — 3-bar pause after any loss             |
+//| FIX-7: Spread filter tightened to 20 pts                          |
+//| FIX-8: No longer force-close opposite positions on signal         |
+//| FIX-9: ADX threshold raised to 28                                 |
+//| FIX-10: Loss streak & cooldown rebuilt from history on each bar   |
+//| FIX-11: Spread filter in pips (points/10); stoplevel clamp added  |
+//| FIX-12: Trade-permission guard; retry+log OrderSend; log the rest |
+//| FIX-13: Account-wide daily-loss close-all breaker (default 4%)   |
+//| FIX-14: Daily-loss breaker scoped to EA magic only; Acct Guard   |
+//|         stays account-wide (all trades)                          |
+//+------------------------------------------------------------------+
+
+input string   _CircuitBreaker   = "--- Circuit Breaker Matrix ---";
+input bool     UseDailyLossLimit = true;
+input double   MaxDailyLossPercent = 0.8;    // Maximum account loss % per day
+input bool     UseConsecLossGuard = true;    // Reduce risk after losing streaks
+input int      MaxConsecLosses    = 3;       // Consecutive losses before risk reduction
+input double   ReducedRiskMult   = 0.5;      // Multiplier applied to RiskPercent after streak
+input bool     UseAccountDailyClose = true;  // Close ALL positions if account-wide daily loss trips
+input double   AccountDailyClosePercent = 4.0; // Account-wide daily loss % (all trades, all magic numbers)
+
+//--- Input Parameters: Strategy Engine
+input string   _StrategySettings = "--- Strategy Core Configuration ---";
+input int      FastPeriod        = 20;
+input int      SlowPeriod        = 30;
+
+//--- Input Parameters: Probability Filtering
+input string   _FilterSettings   = "--- High Probability Filtering ---";
+input bool     UseSmaFilter      = true;
+input int      SmaPeriod         = 200;
+
+//--- Input Parameters: Advanced Guardrails
+input string   _AdvancedFilters  = "--- Advanced Guardrails ---";
+input bool     UseAdxFilter      = true;
+input int      AdxThreshold      = 28;
+input bool     UseTrailingStop   = true;
+input double   TrailActivation   = 3.0;
+input double   TrailCushion      = 1.5;
+input int      ReentryCooldownBars = 3;
+
+//--- Input Parameters: Session & Spread Protection
+input string   _Protection       = "--- Live Server Protection Matrix ---";
+input bool     FridayAutoClose   = true;     // Active weekend shield
+input int      FridayCloseHour   = 22;       // Friday close hour
+input bool     UseSpreadFilter   = true;
+input int      MaxSpreadPips     = 20;
+input int      SpreadPipDivisor  = 0;     // points per "pip": 0=auto (5/3-digit->10, else 1); use 10 for XNGUSD 4-digit
+
+// --- Session Toggles (broker time is UTC+3; 17:00 NY = 00:00 server time)
+input string   _SessionSettings  = "--- Session Filters ---";
+input bool     TradeSydney       = true;
+input bool     TradeLondon       = true;     // Trade during London session
+input bool     TradeNY           = true;     // Trade during New York session
+input bool     TradeAsia         = false;    // Optional: Asian session
+
+// Legacy single-chunk session (now unused, but kept for reference)
+input bool     UseSessionFilter  = false;
+input int      StartHour         = 0;
+input int      EndHour           = 18;
+
+//--- Input Parameters: Volatility Risk Management
+input string   _RiskSettings     = "--- Volatility Risk Matrix ---";
+input bool     AutoMoneyManagement = true;
+input double   RiskPercentPerTrade = 1.0;
+input double   LotSize           = 0.10;
+input int      AtrPeriod         = 14;
+input double   SlAtrMultiplier   = 2.0;
+input double   TpAtrMultiplier   = 5.0;
+input int      Slippage          = 3;
+input int      MagicNumber       = 84721;
+
+//--- Input Parameters: HUD
+input string   _UISettings       = "--- CYBER MATRIX HUD ---";
+input bool     ShowDashboard     = true;
+input int      InpXOffset        = 20;
+input int      InpYOffset        = 30;
+input int      InpFontSize       = 8;
+input int      RefreshRateSec    = 1;
+
+input string   _UIColors         = "--- CYBERPUNK COLOR SPECTRUM ---";
+input color    ClrBorder         = C'0,255,204';
+input color    ClrHeader         = C'255,102,0';
+input color    ClrText           = C'180,190,200';
+input color    ClrDim            = C'90,95,105';
+input color    ClrProfit         = C'0,255,102';
+input color    ClrLoss           = C'255,51,51';
+input color    ClrWarn           = C'255,204,0';
+input color    ClrAccent         = C'0,180,255';
+input color    ClrPanelBg        = C'18,22,30';
+input color    ClrActive         = C'0,255,204';
+
+//+------------------------------------------------------------------+
+//| STATE TRACKING GLOBALS                                            |
+//+------------------------------------------------------------------+
+datetime lastBarTime = 0;
+string   PanelPrefix = "HMAX_HUD_";
+int      RowHeight   = 16;
+int      PanelWidth  = 370;
+int      MaxRenderedRows = 0;
+
+//--- Performance counters
+int      gTotalTrades   = 0;
+int      gTotalWins     = 0;
+int      gTotalLosses   = 0;
+double   gTotalPnL      = 0;
+double   gGrossProfit   = 0;
+double   gGrossLoss     = 0;
+double   gLargestWin    = 0;
+double   gLargestLoss   = 0;
+int      gTodayTrades   = 0;
+double   gTodayPnL      = 0;
+int      gWeekTrades    = 0;
+double   gWeekPnL       = 0;
+
+//--- Strategy snapshot
+double   gFastHmaVal    = 0;
+double   gSlowHmaVal    = 0;
+string   gSignalState   = "WAITING";
+color    gSignalColor   = clrNONE;
+string   gMacroTrend    = "N/A";
+color    gMacroColor    = clrNONE;
+
+//--- FIX-1: Daily loss tracking
+double   gDayStartBalance = 0;
+datetime gLastDayTracked  = 0;
+
+//--- FIX-13: Account-wide daily loss (all trades on the account)
+double   gAccountDayStartEquity = 0;
+datetime gAccountDayTracked  = 0;
+bool     gAccountLossTripped = false;
+
+//--- FIX-2: Consecutive loss counter
+int      gConsecLosses    = 0;
+
+//--- FIX-6: Cooldown after loss
+int      gBarsSinceLastLoss = 999;
+
+//--- Reused HMA working buffer (allocated once in OnInit)
+double   gHmaWorkBuf[];
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+  {
+   lastBarTime = iTime(Symbol(), Period(), 0);
+   gDayStartBalance = AccountBalance();
+   gLastDayTracked  = iTime(Symbol(), Period(), 0);
+   gConsecLosses    = 0;
+   gBarsSinceLastLoss = 999;
+   ArrayResize(gHmaWorkBuf, 64);   // max sqrt(slow period) is well under this
+
+// Scan history to restore consecutive loss count and daily baseline
+   RestoreStateFromHistory();
+   RebuildAccountDailyBaseline();
+
+   if(ShowDashboard)
+     {
+      ObjectsDeleteAll(0, PanelPrefix);
+      EventSetTimer(RefreshRateSec);
+      ScanEAPerformance();
+      UpdateStrategySnapshot();
+      RenderDashboard();
+     }
+   return(INIT_SUCCEEDED);
+  }
+
+//+------------------------------------------------------------------+
+//| Restore state from order history on init                         |
+//+------------------------------------------------------------------+
+void RestoreStateFromHistory()
+  {
+   int histTotal = OrdersHistoryTotal();
+   datetime todayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+
+// Find most recent closed trade to restore consecutive loss count
+   int tempConsec = 0;
+   double todayPnL = 0;
+
+   for(int i = histTotal - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
+        {
+         if(OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber)
+           {
+            int type = OrderType();
+            if(type == OP_BUY || type == OP_SELL)
+              {
+               double net = OrderProfit() + OrderSwap() + OrderCommission();
+               if(OrderCloseTime() >= todayStart)
+                  todayPnL += net;
+
+               // Count consecutive losses from most recent backward
+               if(tempConsec == 0 && net < 0)
+                  tempConsec++;
+               else
+                  if(tempConsec > 0 && net < 0)
+                     tempConsec++;
+                  else
+                     if(tempConsec > 0 && net >= 0)
+                        break;
+              }
+           }
+        }
+     }
+
+   gConsecLosses = tempConsec;
+   gDayStartBalance = AccountBalance() - todayPnL;  // Restore day-start balance
+  }
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization                                          |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+  {
+   EventKillTimer();
+   ObjectsDeleteAll(0, PanelPrefix);
+   ChartRedraw(0);
+  }
+
+//+------------------------------------------------------------------+
+//| Timer-driven UI refresh                                          |
+//+------------------------------------------------------------------+
+void OnTimer()
+  {
+   if(ShowDashboard)
+     {
+      ScanEAPerformance();
+      UpdateStrategySnapshot();
+      RenderDashboard();
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| FIX-1: Check if daily loss limit is breached.                    |
+//| FIX-14: Loss is scoped to THIS EA only (symbol + magic number).  |
+//+------------------------------------------------------------------+
+bool IsDailyLossLimitBreached()
+  {
+   if(!UseDailyLossLimit)
+      return false;
+
+// Reset at start of new day
+   datetime todayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   if(todayStart > gLastDayTracked)
+     {
+      gDayStartBalance = AccountBalance();
+      gLastDayTracked = todayStart;
+      gConsecLosses = 0;  // Reset streak on new day
+     }
+
+   double todayEAPnL = GetTodayEAPnL();
+   double dayLoss = -todayEAPnL;                              // positive = EA down today
+   double maxLoss = gDayStartBalance * (MaxDailyLossPercent / 100.0);
+
+   if(dayLoss >= maxLoss)
+      return true;
+
+   return false;
+  }
+
+//+------------------------------------------------------------------+
+//| FIX-14: Today's net PnL for THIS EA only (symbol + magic):       |
+//|         realized PnL on trades closed today plus floating PnL on |
+//|         trades opened today. Same convention as gTodayPnL.       |
+//+------------------------------------------------------------------+
+double GetTodayEAPnL()
+  {
+   datetime todayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   double todayNet = 0;
+
+   int histTotal = OrdersHistoryTotal();
+   for(int i = 0; i < histTotal; i++)
+     {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
+         continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber)
+         continue;
+      int type = OrderType();
+      if((type == OP_BUY || type == OP_SELL) && OrderCloseTime() >= todayStart)
+         todayNet += OrderProfit() + OrderSwap() + OrderCommission();
+     }
+
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+         continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber)
+         continue;
+      int type = OrderType();
+      if((type == OP_BUY || type == OP_SELL) && OrderOpenTime() >= todayStart)
+         todayNet += OrderProfit() + OrderSwap() + OrderCommission();
+     }
+
+   return(todayNet);
+  }
+
+//+------------------------------------------------------------------+
+//| FIX-13: Rebuild account-wide daily-loss baseline from history    |
+//+------------------------------------------------------------------+
+void RebuildAccountDailyBaseline()
+  {
+   datetime todayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   double todayNet = 0;
+   double todayFloating = 0;
+
+   int histTotal = OrdersHistoryTotal();
+   for(int i = 0; i < histTotal; i++)
+     {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
+         continue;
+      int type = OrderType();
+      if(type == OP_BUY || type == OP_SELL)
+        {
+         if(OrderCloseTime() >= todayStart)
+            todayNet += OrderProfit() + OrderSwap() + OrderCommission();
+        }
+     }
+
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+         continue;
+      int type = OrderType();
+      if((type == OP_BUY || type == OP_SELL) && OrderOpenTime() >= todayStart)
+         todayFloating += OrderProfit() + OrderSwap() + OrderCommission();
+     }
+
+   gAccountDayStartEquity = AccountEquity() - todayNet - todayFloating;
+   gAccountDayTracked = todayStart;
+   gAccountLossTripped = false;
+  }
+
+//+------------------------------------------------------------------+
+//| FIX-13: Check account-wide daily loss (all trades, not just magic)|
+//+------------------------------------------------------------------+
+bool IsAccountDailyLossBreached()
+  {
+   if(!UseAccountDailyClose)
+      return(false);
+
+   datetime todayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   if(todayStart > gAccountDayTracked)
+     {
+      gAccountDayStartEquity = AccountEquity();
+      gAccountDayTracked = todayStart;
+      gAccountLossTripped = false;
+     }
+
+   if(gAccountLossTripped)
+      return(true);
+
+   double currentEquity = AccountEquity();
+   double dayLoss = gAccountDayStartEquity - currentEquity;
+   double maxLoss = gAccountDayStartEquity * (AccountDailyClosePercent / 100.0);
+
+   if(dayLoss >= maxLoss)
+     {
+      gAccountLossTripped = true;
+      return(true);
+     }
+
+   return(false);
+  }
+
+//+------------------------------------------------------------------+
+//| FIX-13: Close every open position / pending order on the account |
+//+------------------------------------------------------------------+
+void CloseAllOpenPositions()
+  {
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+         continue;
+      int type = OrderType();
+      int ticket = OrderTicket();
+      if(type == OP_BUY || type == OP_SELL)
+        {
+         double closePrice = (type == OP_BUY) ? Bid : Ask;
+         if(!OrderClose(ticket, OrderLots(), closePrice, Slippage, clrWhite))
+            PrintFormat("CloseAll OrderClose failed: err=%d ticket=%d lots=%s price=%s",
+                        GetLastError(), ticket,
+                        DoubleToString(OrderLots(), 2),
+                        DoubleToString(closePrice, Digits));
+        }
+      else
+         if(type == OP_BUYLIMIT || type == OP_BUYSTOP || type == OP_SELLLIMIT || type == OP_SELLSTOP)
+            if(!OrderDelete(ticket, clrWhite))
+               PrintFormat("CloseAll OrderDelete failed: err=%d ticket=%d", GetLastError(), ticket);
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| FIX-2: Get adjusted risk multiplier based on consecutive losses   |
+//+------------------------------------------------------------------+
+double GetAdjustedRiskMultiplier()
+  {
+   if(!UseConsecLossGuard)
+      return 1.0;
+
+   if(gConsecLosses >= MaxConsecLosses)
+      return ReducedRiskMult;
+
+// Progressive reduction: each loss beyond midpoint reduces risk
+   if(gConsecLosses > MaxConsecLosses / 2)
+      return 1.0 - ((gConsecLosses - MaxConsecLosses / 2) * 0.1);
+
+   return 1.0;
+  }
+
+//+------------------------------------------------------------------+
+//| FIX-6: Check if cooldown period has elapsed                      |
+//+------------------------------------------------------------------+
+bool IsCooldownActive()
+  {
+   return (gBarsSinceLastLoss < ReentryCooldownBars);
+  }
+
+//+------------------------------------------------------------------+
+//| Expert tick handling function                                    |
+//+------------------------------------------------------------------+
+void OnTick()
+  {
+// 1. Dynamic Trailing Stop (runs every tick)
+   ApplyAtrTrailingStop();
+
+// 2. Friday Afternoon Protection
+   if(FridayAutoClose && DayOfWeek() == 5 && TimeHour(TimeCurrent()) >= FridayCloseHour)
+     {
+      CloseOpenPositions(OP_BUY);
+      CloseOpenPositions(OP_SELL);
+      return;
+     }
+
+// 3. FIX-13: Account-wide daily loss — close ALL trades for the day
+   if(IsAccountDailyLossBreached())
+     {
+      CloseAllOpenPositions();
+      if(ShowDashboard)
+        {
+         ScanEAPerformance();
+         UpdateStrategySnapshot();
+         RenderDashboard();
+        }
+      return;
+     }
+
+// 4. FIX-1: Daily Loss Limit Circuit Breaker
+   if(IsDailyLossLimitBreached())
+     {
+      if(ShowDashboard)
+        {
+         ScanEAPerformance();
+         UpdateStrategySnapshot();
+         RenderDashboard();
+        }
+      return;  // Stop all new entries for the day
+     }
+
+// 5. Bar Close Filter
+   datetime currentBarTime = iTime(Symbol(), Period(), 0);
+   if(currentBarTime == lastBarTime)
+     {
+      if(ShowDashboard)
+        {
+         UpdateStrategySnapshot();
+         RenderDashboard();
+        }
+      return;
+     }
+
+// FIX-6 & FIX-10: Rebuild streak + cooldown from history (self-correcting)
+   RebuildLossStateFromHistory();
+
+   int triggerIndex = 1;
+   int priorIndex   = 2;
+   int totalRates   = Bars;
+
+// 5. Spread Filter (MaxSpreadPips is in PIPS; MODE_SPREAD is in points;
+//    SpreadPipDivisor converts points->pips, 0 = auto by digit count)
+   if(UseSpreadFilter)
+     {
+      double currentSpreadPips = GetSpreadPips();
+      if(currentSpreadPips > MaxSpreadPips)
+         return;
+     }
+
+// 6. Session Guardrail — FIXED
+   if(TradeSydney || TradeLondon || TradeNY || TradeAsia)
+     {
+      if(!IsWithinAllowedSession())
+         return;
+     }
+
+// 7. ADX Filter
+   if(UseAdxFilter)
+     {
+      double adxValue = iADX(Symbol(), Period(), 14, PRICE_CLOSE, MODE_MAIN, triggerIndex);
+      if(adxValue < AdxThreshold)
+         return;
+     }
+
+// 8. Compute HMA Values
+   double fastHmaCurrent = CalculateHMA(triggerIndex, FastPeriod, totalRates);
+   double slowHmaCurrent = CalculateHMA(triggerIndex, SlowPeriod, totalRates);
+   double fastHmaPrior   = CalculateHMA(priorIndex, FastPeriod, totalRates);
+   double slowHmaPrior   = CalculateHMA(priorIndex, SlowPeriod, totalRates);
+
+   if(fastHmaCurrent == 0 || slowHmaCurrent == 0 || fastHmaPrior == 0 || slowHmaPrior == 0)
+      return;
+
+// 9. SMA Macro Filter
+   double macroSma = iMA(Symbol(), Period(), SmaPeriod, 0, MODE_SMA, PRICE_CLOSE, triggerIndex);
+   double closePrice = Close[triggerIndex];
+
+// 10. ATR Volatility
+   double atrValue = iATR(Symbol(), Period(), AtrPeriod, triggerIndex);
+   if(atrValue <= 0)
+      return;
+
+   double stopLossDistance = atrValue * SlAtrMultiplier;
+   double takeProfitDistance = atrValue * TpAtrMultiplier;
+
+// FIX-11: Respect broker minimum stop distance (error-130 prevention)
+   double minStopDist = GetStopLevelDistance();
+   if(stopLossDistance < minStopDist)
+      stopLossDistance = minStopDist;
+   if(takeProfitDistance < minStopDist)
+      takeProfitDistance = minStopDist;
+
+// 11. Crossover Evaluation
+   bool isBullishCross = (fastHmaPrior <= slowHmaPrior && fastHmaCurrent > slowHmaCurrent);
+   bool isBearishCross = (fastHmaPrior >= slowHmaPrior && fastHmaCurrent < slowHmaCurrent);
+
+// 12. FIX-6: Block entry if cooldown is active
+   if(IsCooldownActive() && (isBullishCross || isBearishCross))
+      return;
+
+// 13. Execution Core
+   if(isBullishCross)
+     {
+      if(!UseSmaFilter || (closePrice > macroSma))
+        {
+         // FIX-8: Don't force-close opposite positions — let them manage independently
+         // CloseOpenPositions(OP_SELL);  // REMOVED
+
+         if(CountOpenPositions(OP_BUY) == 0)
+           {
+            if(!IsTradePermitted())
+               return;
+
+            double entryPrice = Ask;
+            double slPrice = NormalizeDouble(entryPrice - stopLossDistance, Digits);
+            double tpPrice = NormalizeDouble(entryPrice + takeProfitDistance, Digits);
+
+            // FIX-2 & FIX-3: Apply adjusted risk
+            double adjustedRisk = RiskPercentPerTrade * GetAdjustedRiskMultiplier();
+            double dynamicLots = CalculateDynamicLot(stopLossDistance, adjustedRisk);
+
+            int ticket = SendMarketOrder(OP_BUY, dynamicLots, slPrice, tpPrice, "HMA Cross Buy");
+            if(ticket > 0)
+              {
+               lastBarTime = currentBarTime;
+               gSignalState = "BULLISH CROSS";
+               gSignalColor = ClrProfit;
+              }
+           }
+        }
+     }
+   else
+      if(isBearishCross)
+        {
+         if(!UseSmaFilter || (closePrice < macroSma))
+           {
+            // FIX-8: Don't force-close opposite positions
+            // CloseOpenPositions(OP_BUY);  // REMOVED
+
+            if(CountOpenPositions(OP_SELL) == 0)
+              {
+               if(!IsTradePermitted())
+                  return;
+
+               double entryPrice = Bid;
+               double slPrice = NormalizeDouble(entryPrice + stopLossDistance, Digits);
+               double tpPrice = NormalizeDouble(entryPrice - takeProfitDistance, Digits);
+
+               // FIX-2 & FIX-3: Apply adjusted risk
+               double adjustedRisk = RiskPercentPerTrade * GetAdjustedRiskMultiplier();
+               double dynamicLots = CalculateDynamicLot(stopLossDistance, adjustedRisk);
+
+               int ticket = SendMarketOrder(OP_SELL, dynamicLots, slPrice, tpPrice, "HMA Cross Sell");
+               if(ticket > 0)
+                 {
+                  lastBarTime = currentBarTime;
+                  gSignalState = "BEARISH CROSS";
+                  gSignalColor = ClrLoss;
+                 }
+              }
+           }
+        }
+
+// 14. Refresh HUD
+   if(ShowDashboard)
+     {
+      ScanEAPerformance();
+      UpdateStrategySnapshot();
+      RenderDashboard();
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Track loss on order close — update consecutive counter & cooldown |
+//+------------------------------------------------------------------+
+void TrackOrderClose(int ticket)
+  {
+// A just-closed order has moved to the history pool — select from there
+   if(!OrderSelect(ticket, SELECT_BY_TICKET, MODE_HISTORY))
+      return;
+
+   if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber)
+      return;
+
+   int type = OrderType();
+   if(type != OP_BUY && type != OP_SELL)
+      return;
+
+   double net = OrderProfit() + OrderSwap() + OrderCommission();
+   if(net < 0)
+     {
+      gConsecLosses++;
+      gBarsSinceLastLoss = 0;
+     }
+   else
+     {
+      gConsecLosses = 0;  // Win resets the streak
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Count completed bars between a datetime and now (0 = same bar)   |
+//+------------------------------------------------------------------+
+int BarsSince(datetime targetTime)
+  {
+   if(targetTime <= 0)
+      return(999);
+   int shift = iBarShift(Symbol(), Period(), targetTime, false);
+   if(shift < 0)
+      return(999);
+   return(shift);
+  }
+
+//+------------------------------------------------------------------+
+//| Rebuild consecutive-loss streak & cooldown from order history.   |
+//| Self-correcting: run once per new bar so entry-time state is     |
+//| always accurate, even for SL/TP closes the EA did not perform.   |
+//+------------------------------------------------------------------+
+void RebuildLossStateFromHistory()
+  {
+   int histTotal = OrdersHistoryTotal();
+   int consec = 0;
+   datetime lastLossClose = 0;
+   bool counting = true;
+
+   for(int i = histTotal - 1; i >= 0; i--)
+     {
+      if(!OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
+         continue;
+      if(OrderSymbol() != Symbol() || OrderMagicNumber() != MagicNumber)
+         continue;
+      int type = OrderType();
+      if(type != OP_BUY && type != OP_SELL)
+         continue;
+
+      double net = OrderProfit() + OrderSwap() + OrderCommission();
+      if(counting)
+        {
+         if(net < 0)
+           {
+            consec++;
+            if(lastLossClose == 0)
+               lastLossClose = OrderCloseTime();
+           }
+         else
+            counting = false;   // most recent profitable trade ends the streak scan
+        }
+     }
+
+   gConsecLosses = consec;
+   gBarsSinceLastLoss = (lastLossClose > 0) ? BarsSince(lastLossClose) : 999;
+  }
+
+//+------------------------------------------------------------------+
+//| Spread in pips (MODE_SPREAD is expressed in points)              |
+//+------------------------------------------------------------------+
+double GetSpreadPips()
+  {
+   double spreadPoints = MarketInfo(Symbol(), MODE_SPREAD);
+   int digits = (int)MarketInfo(Symbol(), MODE_DIGITS);
+   int divisor = (SpreadPipDivisor > 0) ? SpreadPipDivisor : ((digits == 5 || digits == 3) ? 10 : 1);
+   return(NormalizeDouble(spreadPoints / divisor, 1));
+  }
+
+//+------------------------------------------------------------------+
+//| Minimum broker stop distance (error-130 prevention)              |
+//+------------------------------------------------------------------+
+double GetStopLevelDistance()
+  {
+   return((double)MarketInfo(Symbol(), MODE_STOPLEVEL) * Point);
+  }
+
+//+------------------------------------------------------------------+
+//| Trade-permission gate — checked right before OrderSend           |
+//+------------------------------------------------------------------+
+bool IsTradePermitted()
+  {
+   if(!IsTradeAllowed())
+      return(false);
+   if(IsTradeContextBusy())
+      return(false);
+   return(true);
+  }
+
+//+------------------------------------------------------------------+
+//| OrderSend wrapper: logs every failure, retries transient errors  |
+//+------------------------------------------------------------------+
+int SendMarketOrder(int cmd, double lots, double sl, double tp, string comment)
+  {
+   RefreshRates();
+   double price = (cmd == OP_BUY) ? Ask : Bid;
+
+   int ticket = OrderSend(Symbol(), cmd, lots, price, Slippage, sl, tp, comment, MagicNumber, 0, (cmd == OP_BUY) ? clrGreen : clrRed);
+   if(ticket > 0)
+      return(ticket);
+
+   int err = GetLastError();
+   PrintFormat("%s OrderSend failed: err=%d cmd=%d lots=%s price=%s sl=%s tp=%s",
+               comment, err, cmd,
+               DoubleToString(lots, 2),
+               DoubleToString(price, Digits),
+               DoubleToString(sl, Digits),
+               DoubleToString(tp, Digits));
+
+// Transient: price changed / off quotes / requote — resend with fresh rates
+   if(err == 135 || err == 136 || err == 138)
+     {
+      RefreshRates();
+      price = (cmd == OP_BUY) ? Ask : Bid;
+      ticket = OrderSend(Symbol(), cmd, lots, price, Slippage, sl, tp, comment, MagicNumber, 0, (cmd == OP_BUY) ? clrGreen : clrRed);
+      if(ticket > 0)
+         return(ticket);
+      PrintFormat("%s OrderSend retry failed: err=%d", comment, GetLastError());
+     }
+
+   return(-1);
+  }
+
+//+------------------------------------------------------------------+
+//| Session filter: returns true if current broker time is in an     |
+//| allowed session (Sydney, Tokyo, London, NY) based on toggles.    |
+//| Broker time is UTC+3. Times below are in broker/server time.     |
+//+------------------------------------------------------------------+
+bool IsWithinAllowedSession()
+  {
+// If no session is enabled, allow trading (or return false to block all)
+   if(!TradeLondon && !TradeNY && !TradeAsia && !TradeSydney)
+      return(true);
+
+   int currentHour = TimeHour(TimeCurrent());  // broker/server time (UTC+3)
+
+   bool inSydney = false;
+   bool inTokyo  = false;
+   bool inLondon = false;
+   bool inNY     = false;
+
+// --- Define sessions in BROKER TIME (UTC+3) ---
+
+// Sydney: 22:00–07:00 (spans midnight)
+//   Covers hours 22,23,0,1,2,3,4,5,6
+   if(currentHour >= 22 || currentHour < 7)
+      inSydney = true;
+
+// Tokyo (Asian): 02:00–11:00
+//   Covers hours 2,3,4,5,6,7,8,9,10
+   if(currentHour >= 2 && currentHour < 11)
+      inTokyo = true;
+
+// London (European): 09:00–18:00
+//   Covers hours 9,10,11,12,13,14,15,16,17
+   if(currentHour >= 9 && currentHour < 18)
+      inLondon = true;
+
+// New York: 15:00–24:00 (00:00)
+//   Covers hours 15,16,17,18,19,20,21,22,23
+   if(currentHour >= 15)
+      inNY = true;
+
+// Combine according to toggles
+
+   if(TradeSydney && inSydney)
+      return(true);
+   if(TradeAsia   && inTokyo)    // TradeAsia toggle now controls Tokyo session
+      return(true);
+   if(TradeLondon && inLondon)
+      return(true);
+   if(TradeNY     && inNY)
+      return(true);
+
+   return(false);
+  }
+
+//+------------------------------------------------------------------+
+//| Hull Moving Average Calculation                                  |
+//+------------------------------------------------------------------+
+double CalculateHMA(int index, int period, int totalRates)
+  {
+   if(period <= 1)
+      return(Close[index]);
+
+   int halfPeriod = period / 2;
+   int sqrtPeriod = (int)MathRound(MathSqrt(period));
+
+   if(index + period + sqrtPeriod >= totalRates)
+      return(0.0);
+
+// Reuse the pre-allocated global buffer (no per-call allocation)
+   for(int i = 0; i < sqrtPeriod; i++)
+     {
+      int targetIndex = index + i;
+      double wmaHalf = CalculateWMA(targetIndex, halfPeriod);
+      double wmaFull = CalculateWMA(targetIndex, period);
+      gHmaWorkBuf[i] = (2.0 * wmaHalf) - wmaFull;
+     }
+
+   double weightSum = 0;
+   double valueSum = 0;
+
+   for(int i = 0; i < sqrtPeriod; i++)
+     {
+      double weight = sqrtPeriod - i;
+      valueSum += gHmaWorkBuf[i] * weight;
+      weightSum += weight;
+     }
+
+   if(weightSum > 0)
+      return(valueSum / weightSum);
+   return(0.0);
+  }
+
+//+------------------------------------------------------------------+
+//| WMA Calculation                                                  |
+//+------------------------------------------------------------------+
+double CalculateWMA(int index, int period)
+  {
+   double weightSum = 0;
+   double valueSum = 0;
+
+   for(int i = 0; i < period; i++)
+     {
+      double weight = period - i;
+      valueSum += Close[index + i] * weight;
+      weightSum += weight;
+     }
+
+   if(weightSum > 0)
+      return(valueSum / weightSum);
+   return(0.0);
+  }
+
+//+------------------------------------------------------------------+
+//| ATR Trailing Stop                                                |
+//+------------------------------------------------------------------+
+void ApplyAtrTrailingStop()
+  {
+   if(!UseTrailingStop)
+      return;
+
+   double atr = iATR(Symbol(), Period(), AtrPeriod, 1);
+   if(atr <= 0)
+      return;
+
+   double activationDistance = atr * TrailActivation;
+   double trailingDistance   = atr * TrailCushion;
+
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+        {
+         if(OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber)
+           {
+            if(OrderType() == OP_BUY)
+              {
+               if(Bid - OrderOpenPrice() > activationDistance)
+                 {
+                  double targetStop = NormalizeDouble(Bid - trailingDistance, Digits);
+                  if(targetStop > OrderStopLoss() || OrderStopLoss() == 0)
+                    {
+                     bool modified = OrderModify(OrderTicket(), OrderOpenPrice(), targetStop, OrderTakeProfit(), 0, clrBlue);
+                     if(!modified)
+                        PrintFormat("Trail OrderModify failed: err=%d ticket=%d sl=%s", GetLastError(), OrderTicket(), DoubleToString(targetStop, Digits));
+                    }
+                 }
+              }
+            if(OrderType() == OP_SELL)
+              {
+               if(OrderOpenPrice() - Ask > activationDistance)
+                 {
+                  double targetStop = NormalizeDouble(Ask + trailingDistance, Digits);
+                  if(targetStop < OrderStopLoss() || OrderStopLoss() == 0)
+                    {
+                     bool modified = OrderModify(OrderTicket(), OrderOpenPrice(), targetStop, OrderTakeProfit(), 0, clrBlue);
+                     if(!modified)
+                        PrintFormat("Trail OrderModify failed: err=%d ticket=%d sl=%s", GetLastError(), OrderTicket(), DoubleToString(targetStop, Digits));
+                    }
+                 }
+              }
+           }
+        }
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Dynamic Lot Sizing — NOW accepts adjusted risk parameter          |
+//+------------------------------------------------------------------+
+double CalculateDynamicLot(double stopLossPriceDelta, double riskPercent)
+  {
+   if(!AutoMoneyManagement)
+      return(LotSize);
+
+   double accountEquity = AccountBalance();
+   double riskAmount    = accountEquity * (riskPercent / 100.0);
+   double tickValue     = MarketInfo(Symbol(), MODE_TICKVALUE);
+   double tickSize      = MarketInfo(Symbol(), MODE_TICKSIZE);
+   double lotStep       = MarketInfo(Symbol(), MODE_LOTSTEP);
+   double minLot        = MarketInfo(Symbol(), MODE_MINLOT);
+   double maxLot        = MarketInfo(Symbol(), MODE_MAXLOT);
+
+   if(stopLossPriceDelta <= 0 || tickValue <= 0)
+      return(LotSize);
+
+   double totalTicks = stopLossPriceDelta / tickSize;
+   double calculatedLots = riskAmount / (totalTicks * tickValue);
+   calculatedLots = MathRound(calculatedLots / lotStep) * lotStep;
+
+   if(calculatedLots < minLot)
+      calculatedLots = minLot;
+   if(calculatedLots > maxLot)
+      calculatedLots = maxLot;
+
+   return(NormalizeDouble(calculatedLots, 2));
+  }
+
+//+------------------------------------------------------------------+
+//| Count Open Positions                                             |
+//+------------------------------------------------------------------+
+int CountOpenPositions(int type)
+  {
+   int total = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+        {
+         if(OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber && OrderType() == type)
+            total++;
+        }
+     }
+   return(total);
+  }
+
+//+------------------------------------------------------------------+
+//| Close Open Positions                                             |
+//+------------------------------------------------------------------+
+void CloseOpenPositions(int type)
+  {
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+        {
+         if(OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber && OrderType() == type)
+           {
+            int ticket = OrderTicket();
+            double clsLots = OrderLots();
+            double closePrice = (type == OP_BUY) ? Bid : Ask;
+            bool closed = OrderClose(ticket, clsLots, closePrice, Slippage, clrWhite);
+            if(!closed)
+               PrintFormat("OrderClose failed: err=%d ticket=%d lots=%s price=%s",
+                           GetLastError(), ticket,
+                           DoubleToString(clsLots, 2),
+                           DoubleToString(closePrice, Digits));
+            else
+               TrackOrderClose(ticket);
+           }
+        }
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Update Strategy Snapshot                                         |
+//+------------------------------------------------------------------+
+void UpdateStrategySnapshot()
+  {
+   int totalRates = Bars;
+   if(totalRates < FastPeriod + 20)
+      return;
+
+   int idx = 1;
+   gFastHmaVal = CalculateHMA(idx, FastPeriod, totalRates);
+   gSlowHmaVal = CalculateHMA(idx, SlowPeriod, totalRates);
+
+   int priorIdx = 2;
+   double fPrev = CalculateHMA(priorIdx, FastPeriod, totalRates);
+   double sPrev = CalculateHMA(priorIdx, SlowPeriod, totalRates);
+
+   if(gFastHmaVal > gSlowHmaVal)
+     {
+      if(fPrev <= sPrev)
+        { gSignalState = "BULLISH CROSS"; gSignalColor = ClrProfit; }
+      else
+        { gSignalState = "BULLISH"; gSignalColor = ClrProfit; }
+     }
+   else
+      if(gFastHmaVal < gSlowHmaVal)
+        {
+         if(fPrev >= sPrev)
+           { gSignalState = "BEARISH CROSS"; gSignalColor = ClrLoss; }
+         else
+           { gSignalState = "BEARISH"; gSignalColor = ClrLoss; }
+        }
+      else
+        {
+         gSignalState = "NEUTRAL";
+         gSignalColor = ClrWarn;
+        }
+
+   if(UseSmaFilter)
+     {
+      double macroSma = iMA(Symbol(), Period(), SmaPeriod, 0, MODE_SMA, PRICE_CLOSE, idx);
+      double cp = Close[idx];
+      if(cp > macroSma)
+        { gMacroTrend = "ABOVE 200 SMA"; gMacroColor = ClrProfit; }
+      else
+        { gMacroTrend = "BELOW 200 SMA"; gMacroColor = ClrLoss; }
+     }
+   else
+     {
+      gMacroTrend = "FILTER OFF";
+      gMacroColor = ClrDim;
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Scan EA Performance                                              |
+//+------------------------------------------------------------------+
+void ScanEAPerformance()
+  {
+   gTotalTrades  = 0;
+   gTotalWins    = 0;
+   gTotalLosses  = 0;
+   gTotalPnL     = 0;
+   gGrossProfit  = 0;
+   gGrossLoss    = 0;
+   gLargestWin   = 0;
+   gLargestLoss  = 0;
+   gTodayTrades  = 0;
+   gTodayPnL     = 0;
+   gWeekTrades   = 0;
+   gWeekPnL      = 0;
+
+   datetime todayStart = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   int dow = DayOfWeek();
+   datetime weekStart = todayStart - ((dow == 0) ? 6 : dow - 1) * 86400;
+
+   int histTotal = OrdersHistoryTotal();
+   for(int i = 0; i < histTotal; i++)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_HISTORY))
+        {
+         if(OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber)
+           {
+            int type = OrderType();
+            if(type == OP_BUY || type == OP_SELL)
+              {
+               double net = OrderProfit() + OrderSwap() + OrderCommission();
+               gTotalTrades++;
+               gTotalPnL += net;
+
+               if(net >= 0)
+                 {
+                  gTotalWins++;
+                  gGrossProfit += net;
+                  if(net > gLargestWin)
+                     gLargestWin = net;
+                 }
+               else
+                 {
+                  gTotalLosses++;
+                  gGrossLoss += MathAbs(net);
+                  if(net < gLargestLoss)
+                     gLargestLoss = net;
+                 }
+
+               datetime ct = OrderCloseTime();
+               if(ct >= todayStart)
+                 { gTodayTrades++; gTodayPnL += net; }
+               if(ct >= weekStart)
+                 { gWeekTrades++; gWeekPnL += net; }
+              }
+           }
+        }
+     }
+
+   int liveTotal = OrdersTotal();
+   for(int i = 0; i < liveTotal; i++)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+        {
+         if(OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber)
+           {
+            int type = OrderType();
+            if(type == OP_BUY || type == OP_SELL)
+              {
+               if(OrderOpenTime() >= todayStart)
+                 {
+                  gTodayTrades++;
+                  gTodayPnL += OrderProfit() + OrderSwap() + OrderCommission();
+                 }
+              }
+           }
+        }
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Build HUD bar                                                    |
+//+------------------------------------------------------------------+
+string BuildHUDBar(int filled, int maxLen)
+  {
+   string bar = "";
+   for(int i = 0; i < maxLen; i++)
+     {
+      if(i < filled)
+         bar += "+";
+      else
+         bar += "-";
+     }
+   return(bar);
+  }
+
+//+------------------------------------------------------------------+
+//| Get session label                                                |
+//+------------------------------------------------------------------+
+string GetSessionLabel()
+  {
+   int h = TimeHour(TimeCurrent());
+
+   bool inSydney = (h >= 22 || h < 7);
+   bool inTokyo  = (h >= 2 && h < 11);
+   bool inLondon = (h >= 9 && h < 18);
+   bool inNY     = (h >= 15);
+
+   if(inLondon && inNY)
+      return("NY / LONDON OVERLAP");
+   if(inTokyo && inLondon)
+      return("TOKYO / LONDON OVERLAP");
+   if(inSydney && inTokyo)
+      return("SYDNEY / TOKYO OVERLAP");
+   if(inSydney)
+      return("SYDNEY SESSION");
+   if(inTokyo)
+      return("TOKYO SESSION");
+   if(inLondon)
+      return("LONDON SESSION");
+   if(inNY)
+      return("NEW YORK SESSION");
+
+   return("OFF-HOURS");
+  }
+
+//+------------------------------------------------------------------+
+//| Return a compact status for a session toggle                     |
+//+------------------------------------------------------------------+
+string SessionToggleStatus(bool enabled)
+  {
+   return(enabled ? "ON" : "OFF");
+  }
+
+//+------------------------------------------------------------------+
+//| Get timeframe string                                             |
+//+------------------------------------------------------------------+
+string GetTFString()
+  {
+   switch(Period())
+     {
+      case PERIOD_M1:
+         return("M1");
+      case PERIOD_M5:
+         return("M5");
+      case PERIOD_M15:
+         return("M15");
+      case PERIOD_M30:
+         return("M30");
+      case PERIOD_H1:
+         return("H1");
+      case PERIOD_H4:
+         return("H4");
+      case PERIOD_D1:
+         return("D1");
+      case PERIOD_W1:
+         return("W1");
+      case PERIOD_MN1:
+         return("MN1");
+      default:
+         return("TF" + IntegerToString(Period()));
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Monospace row renderer                                           |
+//+------------------------------------------------------------------+
+void RenderRow(int rowIdx, string label, string value, color textClr, bool isHeader = false)
+  {
+   if(textClr == clrNONE)
+      textClr = ClrText;
+
+   int yPos = InpYOffset + 8 + (rowIdx * RowHeight);
+   string objId = PanelPrefix + "L_" + IntegerToString(rowIdx);
+
+   if(ObjectFind(0, objId) < 0)
+     {
+      ObjectCreate(0, objId, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, objId, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+      ObjectSetInteger(0, objId, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(0, objId, OBJPROP_HIDDEN, true);
+     }
+
+   ObjectSetInteger(0, objId, OBJPROP_XDISTANCE, InpXOffset + 12);
+   ObjectSetInteger(0, objId, OBJPROP_YDISTANCE, yPos);
+   ObjectSetString(0, objId, OBJPROP_FONT, "Lucida Console");
+   ObjectSetInteger(0, objId, OBJPROP_FONTSIZE, isHeader ? InpFontSize + 1 : InpFontSize);
+   ObjectSetInteger(0, objId, OBJPROP_COLOR, textClr);
+
+   if(value != "")
+     {
+      int targetW = 48;
+      int dotsNeeded = targetW - StringLen(label) - StringLen(value);
+      string sep = "";
+      for(int i = 0; i < MathMax(dotsNeeded, 1); i++)
+         sep += " ";
+      ObjectSetString(0, objId, OBJPROP_TEXT, label + sep + value);
+     }
+   else
+     {
+      ObjectSetString(0, objId, OBJPROP_TEXT, label);
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Draw panel background                                            |
+//+------------------------------------------------------------------+
+void DrawPanelBG(string name, int x, int y, int w, int h, color clr)
+  {
+   if(ObjectFind(0, name) < 0)
+     {
+      ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, name, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+      ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
+     }
+   ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+   ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+   ObjectSetInteger(0, name, OBJPROP_XSIZE, w);
+   ObjectSetInteger(0, name, OBJPROP_YSIZE, h);
+   ObjectSetInteger(0, name, OBJPROP_BGCOLOR, ClrPanelBg);
+   ObjectSetInteger(0, name, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+   ObjectSetInteger(0, name, OBJPROP_COLOR, clr);
+   ObjectSetInteger(0, name, OBJPROP_WIDTH, 1);
+   ObjectSetInteger(0, name, OBJPROP_BACK, false);
+  }
+
+//+------------------------------------------------------------------+
+//| Draw accent bar                                                  |
+//+------------------------------------------------------------------+
+void DrawAccentBar(string name, int x, int y, int w, int h, color clr)
+  {
+   if(ObjectFind(0, name) < 0)
+     {
+      ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, name, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+      ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
+     }
+   ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+   ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+   ObjectSetInteger(0, name, OBJPROP_XSIZE, w);
+   ObjectSetInteger(0, name, OBJPROP_YSIZE, h);
+   ObjectSetInteger(0, name, OBJPROP_BGCOLOR, clr);
+   ObjectSetInteger(0, name, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+   ObjectSetInteger(0, name, OBJPROP_COLOR, clr);
+   ObjectSetInteger(0, name, OBJPROP_WIDTH, 0);
+   ObjectSetInteger(0, name, OBJPROP_BACK, false);
+  }
+
+//+------------------------------------------------------------------+
+//| Dashboard Renderer                                               |
+//+------------------------------------------------------------------+
+void RenderDashboard()
+  {
+   if(!ShowDashboard)
+      return;
+
+   int totalObjects = ObjectsTotal(0, -1);
+   for(int idx = totalObjects - 1; idx >= 0; idx--)
+     {
+      string objName = ObjectName(0, idx);
+      if(StringFind(objName, PanelPrefix) == 0)
+         ObjectDelete(0, objName);
+     }
+   MaxRenderedRows = 0;
+
+   double balance     = AccountBalance();
+   double equity      = AccountEquity();
+   double freeMargin  = AccountFreeMargin();
+   double marginLvl   = (AccountMargin() > 0) ? (equity / AccountMargin()) * 100 : 0;
+   double drawdownAbs = balance - equity;
+   double drawdownPct = (balance > 0) ? (drawdownAbs / balance) * 100 : 0;
+   double spreadPips  = GetSpreadPips();
+   double pointVal    = MarketInfo(Symbol(), MODE_POINT);
+   int    digits      = (int)MarketInfo(Symbol(), MODE_DIGITS);
+   double atrVal      = iATR(Symbol(), Period(), AtrPeriod, 0);
+
+   double wr = (gTotalTrades > 0) ? ((double)gTotalWins / gTotalTrades) * 100.0 : 0;
+   double pf = (gGrossLoss > 0) ? gGrossProfit / gGrossLoss : 0;
+
+   int totalBuys  = CountOpenPositions(OP_BUY);
+   int totalSells = CountOpenPositions(OP_SELL);
+   int totalOpen  = totalBuys + totalSells;
+
+   double floatingPnL = 0;
+   double openVolume  = 0;
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+        {
+         if(OrderSymbol() == Symbol() && OrderMagicNumber() == MagicNumber)
+           {
+            floatingPnL += OrderProfit() + OrderSwap() + OrderCommission();
+            openVolume  += OrderLots();
+           }
+        }
+     }
+
+   string smaStatus   = UseSmaFilter     ? "ON" : "OFF";
+   string adxStatus   = UseAdxFilter     ? "ON" : "OFF";
+   string sprdStatus  = UseSpreadFilter   ? "ON" : "OFF";
+   string trailStatus = UseTrailingStop   ? "ON" : "OFF";
+   string fridayStatus = FridayAutoClose  ? "ON" : "OFF";
+
+   int totalRows = 36;
+   int panelHeight = (totalRows * RowHeight);
+
+// Breaker states drive HUD border color: Acct Guard (loss) > Daily Loss (warn)
+   bool dailyBreached = IsDailyLossLimitBreached();
+   bool acctBreached   = IsAccountDailyLossBreached();
+   color borderClr = ClrBorder;
+   if(acctBreached)
+      borderClr = ClrLoss;
+   else
+      if(dailyBreached)
+         borderClr = ClrWarn;
+
+   DrawPanelBG(PanelPrefix + "BG", InpXOffset, InpYOffset, PanelWidth, panelHeight, borderClr);
+   DrawAccentBar(PanelPrefix + "Glow", InpXOffset, InpYOffset, PanelWidth, 2, borderClr);
+
+   int row = 0;
+
+// EA PERFORMANCE
+   row++;
+   RenderRow(row++, "─── EA PERFORMANCE ────────────────────────", "", ClrAccent, true);
+   RenderRow(row++, "  Total Trades", IntegerToString(gTotalTrades), ClrText);
+   RenderRow(row++, "  Win Rate",
+             BuildHUDBar((int)MathRound(wr / 10), 10) + " " + DoubleToString(wr, 1) + "%",
+             (wr >= 50) ? ClrProfit : ClrLoss);
+   RenderRow(row++, "  Profit Factor", DoubleToString(pf, 2),
+             (pf >= 2.0) ? ClrProfit : (pf >= 1.0) ? ClrWarn : ClrLoss);
+   RenderRow(row++, "  Net P&L", DoubleToString(gTotalPnL, 2),
+             (gTotalPnL >= 0) ? ClrProfit : ClrLoss);
+   RenderRow(row++, "  Today",
+             IntegerToString(gTodayTrades) + " trades  |  " + DoubleToString(gTodayPnL, 2),
+             (gTodayPnL >= 0) ? ClrProfit : ClrLoss);
+
+// SESSION & PROTECTION
+   row++;
+   RenderRow(row++, "─── SESSION & PROTECTION ──────────────────", "", ClrAccent, true);
+
+   int currentHr = TimeHour(TimeCurrent());
+   int currentMn = TimeMinute(TimeCurrent());
+   bool sessionEnabled = TradeSydney || TradeLondon || TradeNY || TradeAsia;
+   bool tradingActive = IsWithinAllowedSession();
+   color activeClr = tradingActive ? ClrActive : ClrLoss;
+   string activeLabel = tradingActive ? "ONLINE" : "OFFLINE";
+   string sessionMode = sessionEnabled ? "FILTERED" : "ALL HOURS";
+   string sessionToggles = "SYD:" + SessionToggleStatus(TradeSydney) +
+                           " TOK:" + SessionToggleStatus(TradeAsia) +
+                           " LON:" + SessionToggleStatus(TradeLondon) +
+                           " NY:" + SessionToggleStatus(TradeNY);
+
+   int progressFilled = (int)MathRound(((double)currentHr / 24.0) * 20.0);
+   if(progressFilled > 20)
+      progressFilled = 20;
+   string progressBar = BuildHUDBar(progressFilled, 20);
+
+   RenderRow(row++, "  Session Filter", activeLabel + "  |  " + sessionMode,
+             sessionEnabled ? activeClr : ClrDim);
+   RenderRow(row++, "  Sessions", sessionToggles, sessionEnabled ? ClrText : ClrDim);
+   RenderRow(row++, "  Friday Guard",
+             fridayStatus + "  |  Close @ " + IntegerToString(FridayCloseHour) + ":00 Fri",
+             FridayAutoClose ? ClrActive : ClrDim);
+   RenderRow(row++, "  Broker Session", GetSessionLabel(),
+             tradingActive ? ClrWarn : ClrLoss);
+   RenderRow(row++, "  Spread", DoubleToString(spreadPips, 1) + " pips  (max " + IntegerToString(MaxSpreadPips) + ")",
+             (spreadPips > MaxSpreadPips) ? ClrLoss : ClrText);
+   RenderRow(row++, "  Filters",
+             "SMA:" + smaStatus + "  ADX:" + adxStatus + "  Trail:" + trailStatus,
+             ClrDim);
+
+// OPEN POSITIONS
+   row++;
+   RenderRow(row++, "─── OPEN POSITIONS ────────────────────────", "", ClrAccent, true);
+   RenderRow(row++, "  Active Trades", IntegerToString(totalOpen) + "  (B:" + IntegerToString(totalBuys) + "  S:" + IntegerToString(totalSells) + ")",
+             (totalOpen > 0) ? ClrActive : ClrDim);
+   RenderRow(row++, "  Floating P&L", DoubleToString(floatingPnL, 2),
+             (floatingPnL >= 0) ? ClrProfit : ClrLoss);
+
+// STRATEGY ENGINE
+   row++;
+   RenderRow(row++, "─── STRATEGY ENGINE ───────────────────────", "", ClrAccent, true);
+   RenderRow(row++, "  Fast HMA (" + IntegerToString(FastPeriod) + ")",
+             DoubleToString(gFastHmaVal, digits), ClrText);
+   RenderRow(row++, "  Slow HMA (" + IntegerToString(SlowPeriod) + ")",
+             DoubleToString(gSlowHmaVal, digits), ClrText);
+   RenderRow(row++, "  Signal", gSignalState, gSignalColor);
+   RenderRow(row++, "  Macro Trend", gMacroTrend, gMacroColor);
+   RenderRow(row++, "  ATR / SL-TP", DoubleToString(atrVal / pointVal, 1) + " pts  |  " + DoubleToString(SlAtrMultiplier, 1) + "x / " + DoubleToString(TpAtrMultiplier, 1) + "x", ClrDim);
+   RenderRow(row++, "  Consec Losses", IntegerToString(gConsecLosses) +
+             "  (risk: " + DoubleToString(GetAdjustedRiskMultiplier() * 100, 0) + "%)",
+             (gConsecLosses >= MaxConsecLosses) ? ClrLoss : ClrDim);
+
+// FOOTER - CIRCUIT BREAKER MATRIX
+   double acctMaxLoss = gAccountDayStartEquity * (AccountDailyClosePercent / 100.0);
+   double acctDayLoss = gAccountDayStartEquity - AccountEquity();
+   double acctRemaining = MathMax(acctMaxLoss - acctDayLoss, 0.0);
+   double dayLoss = -GetTodayEAPnL();
+   double maxDailyLoss = gDayStartBalance * (MaxDailyLossPercent / 100.0);
+   double dailyLossRemaining = MathMax(maxDailyLoss - dayLoss, 0.0);
+   double dailyLossPercentUsed = (maxDailyLoss > 0) ? (dayLoss / maxDailyLoss) * 100.0 : 0.0;
+   bool streakTriggered = (gConsecLosses >= MaxConsecLosses);
+   double streakRiskMult = GetAdjustedRiskMultiplier();
+   bool spreadGuardTriggered = (UseSpreadFilter && spreadPips > MaxSpreadPips);
+   bool sessionBlocked = (TradeSydney || TradeLondon || TradeNY || TradeAsia) && !IsWithinAllowedSession();
+   bool breakerActive = dailyBreached || acctBreached || streakTriggered || spreadGuardTriggered || sessionBlocked;
+
+   row++;
+   RenderRow(row++, "─── CIRCUIT BREAKER MATRIX ─────────────────", "", ClrWarn, true);
+   RenderRow(row++, "  Daily Loss",
+             dailyBreached ? "TRIGGERED" : DoubleToString(dailyLossRemaining, 2) + " left / " + DoubleToString(maxDailyLoss, 2),
+             dailyBreached ? ClrLoss : (dailyLossPercentUsed > 70 ? ClrWarn : ClrProfit));
+   string acctGuardText = (!UseAccountDailyClose)
+                          ? "GUARD OFF"
+                          : (acctBreached ? "CLOSED ALL - HALTED" : DoubleToString(acctRemaining, 2) + " buffer");
+   RenderRow(row++, "  Acct Guard",
+             acctGuardText + "  (" + DoubleToString(AccountDailyClosePercent, 1) + "%)",
+             acctBreached ? ClrLoss : (UseAccountDailyClose ? ((acctRemaining < acctMaxLoss * 0.30) ? ClrWarn : ClrText) : ClrDim));
+   RenderRow(row++, "  Loss Streak",
+             streakTriggered ? "TRIGGERED" : IntegerToString(gConsecLosses) + "/" + IntegerToString(MaxConsecLosses) + "  |  Risk " + DoubleToString(streakRiskMult * 100.0, 0) + "%",
+             streakTriggered ? ClrLoss : (gConsecLosses > 0 ? ClrWarn : ClrProfit));
+   RenderRow(row++, "  Session / Spread",
+             (sessionBlocked ? "BLOCKED" : (spreadGuardTriggered ? "SPREAD LIMIT" : "CLEAR")) + "  |  " + DoubleToString(spreadPips, 1) + "/" + IntegerToString(MaxSpreadPips) + " pips",
+             (sessionBlocked || spreadGuardTriggered) ? ClrLoss : ClrText);
+   RenderRow(row++, "  Overall",
+             breakerActive ? "ACTIVE" : "STABLE",
+             breakerActive ? ClrLoss : ClrProfit);
+
+   DrawAccentBar(PanelPrefix + "GlowBot", InpXOffset, InpYOffset + panelHeight - 2, PanelWidth, 2, borderClr);
+
+   MaxRenderedRows = row;
+   ChartRedraw(0);
+  }
+//+------------------------------------------------------------------+

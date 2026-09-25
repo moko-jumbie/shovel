@@ -1,0 +1,378 @@
+using System;
+using System.Linq;
+using cAlgo.API;
+using cAlgo.API.Collections;
+using cAlgo.API.Indicators;
+using cAlgo.API.Internals;
+
+namespace cAlgo.Robots
+{
+    [Robot(TimeZone = TimeZones.EAfricaStandardTime, AccessRights = AccessRights.None)]
+    public class hmax_gold : Robot
+    {
+        // ─────────────────────────────────────────────────────────────────────
+        // Strategy Core Configuration
+        // ─────────────────────────────────────────────────────────────────────
+        [Parameter("Label", DefaultValue = "HMA Cross")]
+        public string Label { get; set; }
+
+        [Parameter("Fast HMA Period", DefaultValue = 9, MinValue = 2)]
+        public int FastPeriod { get; set; }
+
+        [Parameter("Slow HMA Period", DefaultValue = 21, MinValue = 2)]
+        public int SlowPeriod { get; set; }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // High Probability Filtering
+        // ─────────────────────────────────────────────────────────────────────
+        [Parameter("Use Macro Trend Filter", DefaultValue = true)]
+        public bool UseSmaFilter { get; set; }
+
+        [Parameter("SMA Filter Period", DefaultValue = 200, MinValue = 10)]
+        public int SmaPeriod { get; set; }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Advanced Guardrails
+        // ─────────────────────────────────────────────────────────────────────
+        [Parameter("Use ADX Filter", DefaultValue = true)]
+        public bool UseAdxFilter { get; set; }
+
+        [Parameter("ADX Threshold", DefaultValue = 24, MinValue = 10)]
+        public int AdxThreshold { get; set; }
+
+        [Parameter("Use Trailing Stop", DefaultValue = true)]
+        public bool UseTrailingStop { get; set; }
+
+        [Parameter("Trail Activation (ATR mult)", DefaultValue = 4.0, MinValue = 0.1)]
+        public double TrailActivation { get; set; }
+
+        [Parameter("Trail Cushion (ATR mult)", DefaultValue = 2.0, MinValue = 0.1)]
+        public double TrailCushion { get; set; }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Live Server Protection Matrix
+        // ─────────────────────────────────────────────────────────────────────
+        [Parameter("Friday Auto Close", DefaultValue = true)]
+        public bool FridayAutoClose { get; set; }
+
+        [Parameter("Friday Close Hour", DefaultValue = 22, MinValue = 0, MaxValue = 23)]
+        public int FridayCloseHour { get; set; }
+
+        [Parameter("Use Session Filter", DefaultValue = true)]
+        public bool UseSessionFilter { get; set; }
+
+        [Parameter("Start Hour", DefaultValue = 0, MinValue = 0, MaxValue = 23)]
+        public int StartHour { get; set; }
+
+        [Parameter("End Hour", DefaultValue = 17, MinValue = 0, MaxValue = 23)]
+        public int EndHour { get; set; }
+
+        [Parameter("Use Spread Filter", DefaultValue = true)]
+        public bool UseSpreadFilter { get; set; }
+
+        [Parameter("Max Spread Pips", DefaultValue = 35.0, MinValue = 0.5)]
+        public double MaxSpreadPips { get; set; }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Volatility Risk Matrix
+        // ─────────────────────────────────────────────────────────────────────
+        [Parameter("Auto Money Management", DefaultValue = true)]
+        public bool AutoMoneyManagement { get; set; }
+
+        [Parameter("Risk % Per Trade", DefaultValue = 2.0, MinValue = 0.1)]
+        public double RiskPercentPerTrade { get; set; }
+
+        [Parameter("Fallback Volume (Lots)", DefaultValue = 0.10, MinValue = 0.01)]
+        public double LotSize { get; set; }
+
+        [Parameter("ATR Period", DefaultValue = 14, MinValue = 1)]
+        public int AtrPeriod { get; set; }
+
+        [Parameter("SL ATR Multiplier", DefaultValue = 2.0, MinValue = 0.1)]
+        public double SlAtrMultiplier { get; set; }
+
+        [Parameter("TP ATR Multiplier", DefaultValue = 5.0, MinValue = 0.1)]
+        public double TpAtrMultiplier { get; set; }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Built-in Indicators
+        // ─────────────────────────────────────────────────────────────────────
+        private SimpleMovingAverage _smaFilter;
+        private AverageDirectionalMovementIndexRating _adx;
+        private AverageTrueRange _atr;
+
+        // ─────────────────────────────────────────────────────────────────────
+        // State Tracking
+        // ─────────────────────────────────────────────────────────────────────
+        private DateTime _lastBarTime;
+
+        protected override void OnStart()
+        {
+            _smaFilter = Indicators.SimpleMovingAverage(Bars.ClosePrices, SmaPeriod);
+            _adx = Indicators.AverageDirectionalMovementIndexRating(14);
+            _atr = Indicators.AverageTrueRange(AtrPeriod, MovingAverageType.WilderSmoothing);
+
+            _lastBarTime = Bars.Last(0).OpenTime;
+
+            Print("HMA Crossover cBot loaded on ", SymbolName, " ", TimeFrame);
+        }
+
+        protected override void OnTick()
+        {
+            // Trailing stop on every tick
+            if (UseTrailingStop)
+                ApplyAtrTrailingStop();
+
+            // Friday auto-close guardrail
+            if (FridayAutoClose && Server.Time.DayOfWeek == DayOfWeek.Friday &&
+                Server.Time.Hour >= FridayCloseHour)
+            {
+                ClosePositions(TradeType.Buy);
+                ClosePositions(TradeType.Sell);
+                return;
+            }
+
+            // Bar close detection — only evaluate entries on a new bar
+            DateTime currentBarTime = Bars.Last(0).OpenTime;
+            if (currentBarTime == _lastBarTime)
+                return;
+
+            // Session filter
+            if (UseSessionFilter)
+            {
+                int h = Server.Time.Hour;
+                bool withinSession = StartHour < EndHour
+                    ? h >= StartHour && h < EndHour
+                    : StartHour > EndHour
+                        ? h >= StartHour || h < EndHour
+                        : false;
+
+                if (!withinSession)
+                    return;
+            }
+
+            // Spread filter
+            if (UseSpreadFilter)
+            {
+                double spreadPips = Symbol.Spread / Symbol.PipSize;
+                if (spreadPips > MaxSpreadPips)
+                    return;
+            }
+
+            // ADX filter
+            if (UseAdxFilter)
+            {
+                double adxVal = _adx.ADX.Last(1);
+                if (adxVal < AdxThreshold)
+                    return;
+            }
+
+            // Indicators — bar [1] = last closed bar
+            double fastHmaCur = CalculateHma(1, FastPeriod);
+            double slowHmaCur = CalculateHma(1, SlowPeriod);
+            double fastHmaPrev = CalculateHma(2, FastPeriod);
+            double slowHmaPrev = CalculateHma(2, SlowPeriod);
+
+            // Guard against uninitialized indicator values
+            if (double.IsNaN(fastHmaCur) || double.IsNaN(slowHmaCur) ||
+                double.IsNaN(fastHmaPrev) || double.IsNaN(slowHmaPrev))
+            {
+                return;
+            }
+
+            // Macro trend filter (SMA)
+            double macroSma = _smaFilter.Result.Last(1);
+            double closePrice = Bars.ClosePrices.Last(1);
+
+            // ATR-based SL / TP
+            double atrVal = _atr.Result.Last(1);
+            if (atrVal <= 0)
+                return;
+
+            double slDistance = atrVal * SlAtrMultiplier;
+            double tpDistance = atrVal * TpAtrMultiplier;
+
+            // Crossover detection
+            bool isBullishCross = (fastHmaPrev <= slowHmaPrev && fastHmaCur > slowHmaCur);
+            bool isBearishCross = (fastHmaPrev >= slowHmaPrev && fastHmaCur < slowHmaCur);
+
+            // Execution
+            if (isBullishCross)
+            {
+                if (!UseSmaFilter || closePrice > macroSma)
+                {
+                    ClosePositions(TradeType.Sell);
+                    if (CountPositions(TradeType.Buy) == 0)
+                    {
+                        double slPips = slDistance / Symbol.PipSize;
+                        double tpPips = tpDistance / Symbol.PipSize;
+                        double volume = CalculateDynamicVolume(slDistance);
+
+                        var result = ExecuteMarketOrder(TradeType.Buy, SymbolName, volume,
+                            Label, slPips, tpPips);
+
+                        if (result.IsSuccessful)
+                        {
+                            Print("BUY opened Vol=", volume, " SL=", slPips, "p TP=", tpPips, "p");
+                            _lastBarTime = currentBarTime;
+                        }
+                        else
+                            Print("BUY failed: ", result.Error);
+                    }
+                }
+            }
+            else if (isBearishCross)
+            {
+                if (!UseSmaFilter || closePrice < macroSma)
+                {
+                    ClosePositions(TradeType.Buy);
+                    if (CountPositions(TradeType.Sell) == 0)
+                    {
+                        double slPips = slDistance / Symbol.PipSize;
+                        double tpPips = tpDistance / Symbol.PipSize;
+                        double volume = CalculateDynamicVolume(slDistance);
+
+                        var result = ExecuteMarketOrder(TradeType.Sell, SymbolName, volume,
+                            Label, slPips, tpPips);
+
+                        if (result.IsSuccessful)
+                        {
+                            Print("SELL opened Vol=", volume, " SL=", slPips, "p TP=", tpPips, "p");
+                            _lastBarTime = currentBarTime;
+                        }
+                        else
+                            Print("SELL failed: ", result.Error);
+                    }
+                }
+            }
+        }
+
+        protected override void OnStop()
+        {
+            Print("HMA Crossover cBot stopped");
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // Core Helpers
+        // ─────────────────────────────────────────────────────────────────────
+
+        private double CalculateHma(int mt4Index, int period)
+        {
+            if (period <= 1)
+                return Bars.ClosePrices[Bars.Count - 1 - mt4Index];
+
+            int halfPeriod = period / 2;
+            int sqrtPeriod = (int)Math.Round(Math.Sqrt(period), MidpointRounding.AwayFromZero);
+            if (mt4Index + period + sqrtPeriod >= Bars.Count)
+                return double.NaN;
+
+            double valueSum = 0;
+            double weightSum = 0;
+
+            for (int i = 0; i < sqrtPeriod; i++)
+            {
+                double hmaInput = (2.0 * CalculateWma(mt4Index + i, halfPeriod)) -
+                                  CalculateWma(mt4Index + i, period);
+                double weight = sqrtPeriod - i;
+                valueSum += hmaInput * weight;
+                weightSum += weight;
+            }
+
+            return weightSum > 0 ? valueSum / weightSum : double.NaN;
+        }
+
+        private double CalculateWma(int mt4Index, int period)
+        {
+            int currentIndex = Bars.Count - 1 - mt4Index;
+            double valueSum = 0;
+            double weightSum = 0;
+
+            for (int i = 0; i < period; i++)
+            {
+                double weight = period - i;
+                valueSum += Bars.ClosePrices[currentIndex - i] * weight;
+                weightSum += weight;
+            }
+
+            return weightSum > 0 ? valueSum / weightSum : double.NaN;
+        }
+
+        private double CalculateDynamicVolume(double slDistanceInPrice)
+        {
+            if (!AutoMoneyManagement)
+                return Symbol.NormalizeVolumeInUnits(Symbol.QuantityToVolumeInUnits(LotSize), RoundingMode.Down);
+
+            double riskAmount = Account.Balance * (RiskPercentPerTrade / 100.0);
+            double tickValue = Symbol.TickValue;
+            double tickSize = Symbol.TickSize;
+
+            if (slDistanceInPrice <= 0 || tickValue <= 0 || tickSize <= 0)
+                return Symbol.NormalizeVolumeInUnits(Symbol.QuantityToVolumeInUnits(LotSize), RoundingMode.Down);
+
+            double totalTicks = slDistanceInPrice / tickSize;
+            double rawVolume = riskAmount / (totalTicks * tickValue);
+
+            double volume = Symbol.NormalizeVolumeInUnits(rawVolume, RoundingMode.ToNearest);
+            volume = Math.Max(Symbol.VolumeInUnitsMin, Math.Min(Symbol.VolumeInUnitsMax, volume));
+            return volume > 0 ? volume : Symbol.NormalizeVolumeInUnits(Symbol.QuantityToVolumeInUnits(LotSize), RoundingMode.Down);
+        }
+
+        private int CountPositions(TradeType tradeType)
+        {
+            return Positions.Count(p => p.SymbolName == SymbolName && p.TradeType == tradeType && p.Label == Label);
+        }
+
+        private void ClosePositions(TradeType tradeType)
+        {
+            var toClose = Positions
+                .Where(p => p.SymbolName == SymbolName && p.TradeType == tradeType && p.Label == Label)
+                .ToList();
+
+            foreach (var pos in toClose)
+            {
+                var result = ClosePosition(pos);
+                if (!result.IsSuccessful)
+                    Print("Close failed: ", result.Error);
+            }
+        }
+
+        private void ApplyAtrTrailingStop()
+        {
+            double atr = _atr.Result.Last(1);
+            if (atr <= 0) return;
+
+            double activationDist = atr * TrailActivation;
+            double trailingDist = atr * TrailCushion;
+
+            foreach (var pos in Positions.Where(p => p.SymbolName == SymbolName && p.Label == Label))
+            {
+                if (pos.TradeType == TradeType.Buy)
+                {
+                    double profitDist = Symbol.Bid - pos.EntryPrice;
+                    if (profitDist > activationDist)
+                    {
+                        double targetSl = Symbol.Bid - trailingDist;
+                        targetSl = Math.Round(targetSl, Symbol.Digits);
+                        if (pos.StopLoss == null || targetSl > pos.StopLoss.Value)
+                        {
+                            ModifyPosition(pos, targetSl, pos.TakeProfit, ProtectionType.Absolute);
+                        }
+                    }
+                }
+                else if (pos.TradeType == TradeType.Sell)
+                {
+                    double profitDist = pos.EntryPrice - Symbol.Ask;
+                    if (profitDist > activationDist)
+                    {
+                        double targetSl = Symbol.Ask + trailingDist;
+                        targetSl = Math.Round(targetSl, Symbol.Digits);
+                        if (pos.StopLoss == null || targetSl < pos.StopLoss.Value)
+                        {
+                            ModifyPosition(pos, targetSl, pos.TakeProfit, ProtectionType.Absolute);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

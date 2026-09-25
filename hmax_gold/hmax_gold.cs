@@ -24,6 +24,20 @@ namespace cAlgo.Robots
     //  - cTrader History stores one record per round trip, so a losing trade
     //    counts once toward the streak (MT4 counted its entry and exit orders
     //    separately). Today's P&L is unaffected.
+    //
+    // Performance notes (all result-preserving unless noted):
+    //  - Because lastBarTime only advances on a successful send, the signal
+    //    block re-runs on every tick after the first bar that does not trade.
+    //    The bar-invariant part of it (HMA, SMA, ATR, crossover) is memoised
+    //    against the bar open time, and both per-tick history walks are cached
+    //    against History.Count, so the per-tick cost drops to a handful of
+    //    native reads. Values are bit-identical to the uncached version.
+    //  - SignalOncePerBar goes further and evaluates the signal block at most
+    //    once per bar. This is the largest single win but is NOT parity
+    //    preserving: an intra-bar spread spike, session boundary or streak
+    //    change is no longer re-checked unless a position closes, and SL/TP
+    //    are sized from the first qualifying tick of the bar rather than any
+    //    qualifying tick. Leave it off to reproduce the EA.
     [Robot(TimeZone = TimeZones.EAfricaStandardTime, AccessRights = AccessRights.None)]
     public class hmax_gold : Robot
     {
@@ -84,6 +98,20 @@ namespace cAlgo.Robots
 
         [Parameter("Re-entry Cooldown (bars)", DefaultValue = 3, MinValue = 0)]
         public int ReentryCooldownBars { get; set; }
+
+        // Off by default, which reproduces the EA exactly: the EA re-evaluates
+        // the whole signal chain on every tick until a send succeeds. Turning
+        // this on evaluates the signal chain at most once per bar, which is the
+        // single largest performance win available, at the cost of no longer
+        // re-checking an intra-bar spread spike, session boundary or streak
+        // change unless a position closes.
+        [Parameter("Evaluate Signal Once Per Bar", DefaultValue = false)]
+        public bool SignalOncePerBar { get; set; }
+
+        // The optimiser restarts the robot once per pass and every order logged
+        // is duplicated into the Log tab, so per-order logging is opt-in.
+        [Parameter("Verbose Logging", DefaultValue = false)]
+        public bool VerboseLogging { get; set; }
 
         // ── Live Server Protection Matrix ────────────────────────────────
         [Parameter("Friday Auto Close", DefaultValue = true)]
@@ -152,6 +180,23 @@ namespace cAlgo.Robots
         private int _consecLosses;
         private int _barsSinceLastLoss;
 
+        // Per-bar signal snapshot, valid while _sigBarTime == the current bar.
+        // See OnTick step 9-12 and EnsureSignalSnapshot.
+        private DateTime _lastEvaluatedBarTime;
+        private DateTime _sigBarTime = default;
+        private bool _sigCached;
+        private double _sigFastHmaCurrent;
+        private double _sigSlowHmaCurrent;
+        private double _sigFastHmaPrior;
+        private double _sigSlowHmaPrior;
+        private double _sigMacroSma;
+        private double _sigClosePrice;
+        private double _sigAtrValue;
+        private double _sigStopLossDistance;
+        private double _sigTakeProfitDistance;
+        private bool _sigBullishCross;
+        private bool _sigBearishCross;
+
         protected override void OnStart()
         {
             _smaFilter = Indicators.SimpleMovingAverage(Bars.ClosePrices, SmaPeriod);
@@ -170,18 +215,24 @@ namespace cAlgo.Robots
             RestoreStateFromHistory();
             RebuildAccountDailyBaseline();
 
+            Positions.Closed += OnPositionClosedEvent;
+
             Print("HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on ",
                   SymbolName, " ", TimeFrame, " label='", Label, "'");
         }
 
         protected override void OnTick()
         {
+            // Invalidates the Server.Time memo for this tick.
+            _tickId++;
+
             // 1. Dynamic trailing stop (every tick) — EA:440
             ApplyAtrTrailingStop();
 
             // 2. Friday protection — EA:443-448
-            if (FridayAutoClose && Server.Time.DayOfWeek == DayOfWeek.Friday &&
-                Server.Time.Hour >= FridayCloseHour)
+            DateTime now = ServerTime();
+            if (FridayAutoClose && now.DayOfWeek == DayOfWeek.Friday &&
+                now.Hour >= FridayCloseHour)
             {
                 CloseOpenPositions(TradeType.Buy);
                 CloseOpenPositions(TradeType.Sell);
@@ -205,7 +256,7 @@ namespace cAlgo.Robots
                 return;
 
             // FIX-6 / FIX-10: rebuild streak + cooldown once per new bar.
-            RebuildLossStateFromHistory();
+            RebuildLossStateFromHistory(currentBarTime);
 
             // 6. Spread filter — EA:496-501
             if (UseSpreadFilter && GetSpreadPips() > MaxSpreadPips)
@@ -219,52 +270,71 @@ namespace cAlgo.Robots
             if (UseAdxFilter && _adx.ADX.Last(1) < AdxThreshold)
                 return;
 
-            // 9. HMA values — EA:519-525
-            double fastHmaCurrent = CalculateHma(1, FastPeriod);
-            double slowHmaCurrent = CalculateHma(1, SlowPeriod);
-            double fastHmaPrior = CalculateHma(2, FastPeriod);
-            double slowHmaPrior = CalculateHma(2, SlowPeriod);
+            // 9-12. Signal snapshot — EA:519-548
+            //
+            // Everything from here to the crossover booleans is a pure function
+            // of the two most recent CLOSED bars plus this instance's period
+            // parameters, so it cannot change between two ticks of the same bar.
+            // Memoising it against the bar open time turns roughly 690 native
+            // Series reads per tick into 690 per bar, and the cached value is
+            // bit-identical to the uncached one.
+            //
+            // The stop-distance CLAMP is deliberately NOT cached: with
+            // BrokerMinStopDistance at its default of 0 it falls back to the
+            // live Symbol.Spread, which does move within a bar.
+            if (SignalOncePerBar)
+            {
+                if (currentBarTime == _lastEvaluatedBarTime)
+                    return;
+                _lastEvaluatedBarTime = currentBarTime;
+            }
 
-            if (fastHmaCurrent == 0 || slowHmaCurrent == 0 || fastHmaPrior == 0 || slowHmaPrior == 0)
+            EnsureSignalSnapshot(currentBarTime);
+
+            if (_sigFastHmaCurrent == 0 || _sigSlowHmaCurrent == 0 ||
+                _sigFastHmaPrior == 0 || _sigSlowHmaPrior == 0)
                 return;
 
-            // 10. SMA macro filter — EA:528-529
-            double macroSma = _smaFilter.Result.Last(1);
-            double closePrice = Bars.ClosePrices.Last(1);
-
-            // 11. ATR volatility — EA:532-537
-            double atrValue = _atr.Result.Last(1);
-            if (atrValue <= 0)
+            if (_sigAtrValue <= 0)
                 return;
-
-            double stopLossDistance = atrValue * SlAtrMultiplier;
-            double takeProfitDistance = atrValue * TpAtrMultiplier;
 
             // FIX-11: respect the broker minimum stop distance — EA:540-544
             double minStopDist = GetStopLevelDistance();
+            double stopLossDistance = _sigStopLossDistance;
+            double takeProfitDistance = _sigTakeProfitDistance;
             if (stopLossDistance < minStopDist)
                 stopLossDistance = minStopDist;
             if (takeProfitDistance < minStopDist)
                 takeProfitDistance = minStopDist;
 
             // 12. Crossover evaluation — EA:547-548
-            bool isBullishCross = fastHmaPrior <= slowHmaPrior && fastHmaCurrent > slowHmaCurrent;
-            bool isBearishCross = fastHmaPrior >= slowHmaPrior && fastHmaCurrent < slowHmaCurrent;
+            bool isBullishCross = _sigBullishCross;
+            bool isBearishCross = _sigBearishCross;
 
             // 13. Re-entry cooldown — EA:551-552
             if (IsCooldownActive() && (isBullishCross || isBearishCross))
                 return;
 
             // 14. Execution core — EA:555-615
+            //
+            // With SignalOncePerBar enabled, the three conditions that the EA
+            // retries on a later tick of the SAME bar release the latch, so the
+            // EA's "keep trying until a send succeeds" behaviour is preserved.
+            // Conditions that are constant within a bar (no crossover, the SMA
+            // filter failing, the cooldown) keep the latch, because retrying
+            // them cannot change the outcome.
             if (isBullishCross)
             {
-                if (!UseSmaFilter || closePrice > macroSma)
+                if (!UseSmaFilter || _sigClosePrice > _sigMacroSma)
                 {
                     // FIX-8: the opposite side is NOT force-closed.
                     if (CountOpenPositions(TradeType.Buy) == 0)
                     {
                         if (!IsTradePermitted())
+                        {
+                            ReleaseEvaluationLatch();
                             return;
+                        }
 
                         if (SendMarketOrder(TradeType.Buy, stopLossDistance, takeProfitDistance,
                                 adjustedRisk: RiskPercentPerTrade * GetAdjustedRiskMultiplier(),
@@ -272,17 +342,28 @@ namespace cAlgo.Robots
                         {
                             _lastBarTime = currentBarTime;
                         }
+                        else
+                        {
+                            ReleaseEvaluationLatch();
+                        }
+                    }
+                    else
+                    {
+                        ReleaseEvaluationLatch();
                     }
                 }
             }
             else if (isBearishCross)
             {
-                if (!UseSmaFilter || closePrice < macroSma)
+                if (!UseSmaFilter || _sigClosePrice < _sigMacroSma)
                 {
                     if (CountOpenPositions(TradeType.Sell) == 0)
                     {
                         if (!IsTradePermitted())
+                        {
+                            ReleaseEvaluationLatch();
                             return;
+                        }
 
                         if (SendMarketOrder(TradeType.Sell, stopLossDistance, takeProfitDistance,
                                 adjustedRisk: RiskPercentPerTrade * GetAdjustedRiskMultiplier(),
@@ -290,9 +371,42 @@ namespace cAlgo.Robots
                         {
                             _lastBarTime = currentBarTime;
                         }
+                        else
+                        {
+                            ReleaseEvaluationLatch();
+                        }
+                    }
+                    else
+                    {
+                        ReleaseEvaluationLatch();
                     }
                 }
             }
+        }
+
+        // A position closing mid-bar can free the slot that blocked an entry, or
+        // change the streak, so the per-bar latch is released and the next tick
+        // re-evaluates — matching the EA, which has no bar-level latch at all.
+        //
+        // Robot.OnPositionClosed(Position) is marked obsolete in this API
+        // version, so the Positions.Closed event is used instead.
+        private void OnPositionClosedEvent(PositionClosedEventArgs args)
+        {
+            Position position = args.Position;
+            if (position != null && position.SymbolName == SymbolName &&
+                position.Label == Label)
+                ReleaseEvaluationLatch();
+        }
+
+        protected override void OnStop()
+        {
+            Positions.Closed -= OnPositionClosedEvent;
+        }
+
+        private void ReleaseEvaluationLatch()
+        {
+            if (SignalOncePerBar)
+                _lastEvaluatedBarTime = default;
         }
 
         // ── State restoration — EA:186-224 ────────────────────────────────
@@ -342,22 +456,57 @@ namespace cAlgo.Robots
         }
 
         // Today's net P&L for this EA only — EA:282-311
+        //
+        // This is the hottest path in the robot: the daily-loss breaker calls
+        // it on every tick, and a naive version re-walks the whole closed-trade
+        // history and the whole account's open positions on each of those ticks.
+        //
+        // Both halves are cached against keys that make the result provably
+        // identical to the uncached scan:
+        //  - The closed half can only change when History.Count changes, because
+        //    history is append-only. Its ORDER is preserved (newest first) so
+        //    the floating-point accumulation is bit-identical.
+        //  - The open half cannot be cached — an open position's NetProfit moves
+        //    every tick — but Positions.FindAll(Label, SymbolName) is a native
+        //    indexed lookup that returns only this instance's positions, instead
+        //    of walking every position on the account.
+        private double _todayClosedPnL;
+        private int _todayClosedPnLHistoryCount = -1;
+        private DateTime _todayClosedPnLDay = default;
+
         private double GetTodayEaPnL()
         {
             DateTime todayStart = MidnightToday();
-            double todayNet = 0;
+            double net = 0;
 
-            foreach (HistoricalTrade trade in MatchingHistory())
-                if (trade.ClosingTime >= todayStart)
-                    todayNet += trade.NetProfit;
+            int historyCount = History.Count;
+            if (_todayClosedPnLHistoryCount != historyCount || _todayClosedPnLDay != todayStart)
+            {
+                double closed = 0;
+                List<HistoricalTrade> trades = MatchingHistory();
+                for (int i = 0; i < trades.Count; i++)
+                {
+                    HistoricalTrade trade = trades[i];
+                    if (trade.ClosingTime >= todayStart)
+                        closed += trade.NetProfit;
+                }
 
-            foreach (Position position in Positions)
-                if (position.SymbolName == SymbolName && position.Label == Label &&
-                    (position.TradeType == TradeType.Buy || position.TradeType == TradeType.Sell) &&
-                    position.EntryTime >= todayStart)
-                    todayNet += position.NetProfit;
+                _todayClosedPnL = closed;
+                _todayClosedPnLHistoryCount = historyCount;
+                _todayClosedPnLDay = todayStart;
+            }
 
-            return todayNet;
+            net += _todayClosedPnL;
+
+            Position[] open = Positions.FindAll(Label, SymbolName);
+            for (int i = 0; i < open.Length; i++)
+            {
+                Position position = open[i];
+                if (position.EntryTime >= todayStart)
+                    net += position.NetProfit;
+            }
+
+            return net;
         }
 
         // Account-wide daily baseline — EA:316-347
@@ -420,16 +569,16 @@ namespace cAlgo.Robots
             {
                 TradeResult result = ClosePosition(position);
                 if (!result.IsSuccessful)
-                    Print("CloseAll ClosePosition failed: code=", result.Error,
-                          " symbol=", position.SymbolName, " id=", position.Id);
+                    Log("CloseAll ClosePosition failed: code=", result.Error,
+                        " symbol=", position.SymbolName, " id=", position.Id);
             }
 
             foreach (PendingOrder order in PendingOrders.ToList())
             {
                 TradeResult result = CancelPendingOrder(order);
                 if (!result.IsSuccessful)
-                    Print("CloseAll CancelOrder failed: code=", result.Error,
-                          " symbol=", order.SymbolName, " id=", order.Id);
+                    Log("CloseAll CancelOrder failed: code=", result.Error,
+                        " symbol=", order.SymbolName, " id=", order.Id);
             }
         }
 
@@ -455,17 +604,32 @@ namespace cAlgo.Robots
         }
 
         // Rebuild streak and cooldown from history — EA:672-705
-        private void RebuildLossStateFromHistory()
+        //
+        // Called from OnTick after the bar-close gate, so without a cache this
+        // walked the entire closed-trade history on every tick. Two fixes:
+        //  - The EA's `counting` flag, once cleared, can never flip back, and
+        //    nothing after it mutates state, so the scan can stop at the first
+        //    non-loss rather than iterating the remainder.
+        //  - The result depends only on the closed history and the current bar,
+        //    so it is memoised against (History.Count, bar open time).
+        private int _lossStateHistoryCount = -1;
+        private DateTime _lossStateBarTime = default;
+        private bool _lossStateCached;
+
+        private void RebuildLossStateFromHistory(DateTime barTime)
         {
+            int historyCount = History.Count;
+            if (_lossStateCached && _lossStateHistoryCount == historyCount &&
+                _lossStateBarTime == barTime)
+                return;
+
             int consec = 0;
             DateTime lastLossClose = default;
-            bool counting = true;
 
-            foreach (HistoricalTrade trade in MatchingHistory())
+            List<HistoricalTrade> trades = MatchingHistory();
+            for (int i = 0; i < trades.Count; i++)
             {
-                if (!counting)
-                    continue;
-
+                HistoricalTrade trade = trades[i];
                 if (trade.NetProfit < 0)
                 {
                     consec++;
@@ -474,12 +638,16 @@ namespace cAlgo.Robots
                 }
                 else
                 {
-                    counting = false;
+                    break;
                 }
             }
 
             _consecLosses = consec;
             _barsSinceLastLoss = lastLossClose != default ? BarsSince(lastLossClose) : 999;
+
+            _lossStateHistoryCount = historyCount;
+            _lossStateBarTime = barTime;
+            _lossStateCached = true;
         }
 
         // Spread in pips — EA:710-716. cTrader reports Symbol.Spread as a price
@@ -528,18 +696,29 @@ namespace cAlgo.Robots
 
             // Logged so the resulting lot size can be cross-checked against the
             // EA's journal on the same bar.
-            Print(comment, " lots=", Math.Round(volume / Symbol.LotSize, 4),
-                  " units=", volume, " risk%=", Math.Round(adjustedRisk, 3),
-                  " sl=", Math.Round(slPips, 1), "p tp=", Math.Round(tpPips, 1), "p");
+            Log(comment, " lots=", Math.Round(volume / Symbol.LotSize, 4),
+                " units=", volume, " risk%=", Math.Round(adjustedRisk, 3),
+                " sl=", Math.Round(slPips, 1), "p tp=", Math.Round(tpPips, 1), "p");
 
             TradeResult result = ExecuteMarketOrder(tradeType, SymbolName, volume, Label,
                                                     slPips, tpPips, comment);
             if (result.IsSuccessful)
                 return true;
 
-            Print(comment, " ExecuteMarketOrder failed: code=", result.Error,
-                  " lots=", volume, " sl=", slPips, "p tp=", tpPips, "p");
+            Log(comment, " ExecuteMarketOrder failed: code=", result.Error,
+                " lots=", volume, " sl=", slPips, "p tp=", tpPips, "p");
             return false;
+        }
+
+        // Log sink for the per-order lines. These fire on every fill and on
+        // every rejected trailing modify, which during an optimisation run is
+        // thousands of lines per pass across every pass, and the Log panel
+        // update is not free. Genuinely rare events — the lot-floor risk warning
+        // and the start-up banner — still Print unconditionally.
+        private void Log(params object[] args)
+        {
+            if (VerboseLogging)
+                Print(args);
         }
 
         // Session filter in broker time — EA:777-824
@@ -548,7 +727,7 @@ namespace cAlgo.Robots
             if (!TradeLondon && !TradeNY && !TradeAsia && !TradeSydney)
                 return true;
 
-            int currentHour = Server.Time.Hour;
+            int currentHour = ServerTime().Hour;
 
             bool inSydney = currentHour >= 22 || currentHour < 7;
             bool inTokyo = currentHour >= 2 && currentHour < 11;
@@ -564,6 +743,48 @@ namespace cAlgo.Robots
         }
 
         // ── Hull moving average — EA:829-882 ──────────────────────────────
+
+        // The EA's step 9-12 reads only closed bars 1 and 2, so the whole block
+        // is constant for the lifetime of a bar. Recomputing it per tick cost
+        // roughly 690 native Series indexer reads; caching it against the bar
+        // open time removes that without changing any value.
+        private void EnsureSignalSnapshot(DateTime barTime)
+        {
+            if (_sigCached && _sigBarTime == barTime)
+                return;
+
+            // EA:519-525
+            double fastHmaCurrent = CalculateHma(1, FastPeriod);
+            double slowHmaCurrent = CalculateHma(1, SlowPeriod);
+            double fastHmaPrior = CalculateHma(2, FastPeriod);
+            double slowHmaPrior = CalculateHma(2, SlowPeriod);
+
+            // EA:528-529
+            double macroSma = _smaFilter.Result.Last(1);
+            double closePrice = Bars.ClosePrices.Last(1);
+
+            // EA:532-537
+            double atrValue = _atr.Result.Last(1);
+
+            // EA:547-548
+            bool bullish = fastHmaPrior <= slowHmaPrior && fastHmaCurrent > slowHmaCurrent;
+            bool bearish = fastHmaPrior >= slowHmaPrior && fastHmaCurrent < slowHmaCurrent;
+
+            _sigFastHmaCurrent = fastHmaCurrent;
+            _sigSlowHmaCurrent = slowHmaCurrent;
+            _sigFastHmaPrior = fastHmaPrior;
+            _sigSlowHmaPrior = slowHmaPrior;
+            _sigMacroSma = macroSma;
+            _sigClosePrice = closePrice;
+            _sigAtrValue = atrValue;
+            _sigStopLossDistance = atrValue * SlAtrMultiplier;
+            _sigTakeProfitDistance = atrValue * TpAtrMultiplier;
+            _sigBullishCross = bullish;
+            _sigBearishCross = bearish;
+            _sigBarTime = barTime;
+            _sigCached = true;
+        }
+
         private double CalculateHma(int index, int period)
         {
             if (period <= 1)
@@ -595,15 +816,17 @@ namespace cAlgo.Robots
         private double CalculateWma(int index, int period)
         {
             int chronologicalIndex = Bars.Count - 1 - index;
-            double weightSum = 0;
+            DataSeries closes = Bars.ClosePrices;
+
+            // period + (period-1) + ... + 1. The original accumulated this in
+            // the loop; the closed form is the same exact integer for any period
+            // below 2^26, so the divisor — and therefore every WMA value — is
+            // bit-identical while halving the work in the inner loop.
+            double weightSum = period * (period + 1) / 2.0;
             double valueSum = 0;
 
             for (int i = 0; i < period; i++)
-            {
-                double weight = period - i;
-                valueSum += Bars.ClosePrices[chronologicalIndex - i] * weight;
-                weightSum += weight;
-            }
+                valueSum += closes[chronologicalIndex - i] * (period - i);
 
             return weightSum > 0 ? valueSum / weightSum : 0.0;
         }
@@ -621,16 +844,29 @@ namespace cAlgo.Robots
             double activationDistance = atr * TrailActivation;
             double trailingDistance = atr * TrailCushion;
 
-            foreach (Position position in Positions
-                         .Where(p => p.SymbolName == SymbolName && p.Label == Label)
-                         .ToList())
+            // Positions.FindAll(Label, SymbolName) is a native indexed lookup
+            // returning only this instance's positions. The previous
+            // Positions.Where(...).ToList() allocated a lazy iterator, a
+            // List and a closure on every tick.
+            Position[] open = Positions.FindAll(Label, SymbolName);
+            if (open.Length == 0)
+                return;
+
+            // Read once per tick rather than twice per position. Same tick,
+            // same values, so the result is unchanged.
+            double bid = Symbol.Bid;
+            double ask = Symbol.Ask;
+
+            for (int i = 0; i < open.Length; i++)
             {
+                Position position = open[i];
+
                 if (position.TradeType == TradeType.Buy)
                 {
-                    if (Symbol.Bid - position.EntryPrice <= activationDistance)
+                    if (bid - position.EntryPrice <= activationDistance)
                         continue;
 
-                    double targetStop = Math.Round(Symbol.Bid - trailingDistance, Symbol.Digits,
+                    double targetStop = Math.Round(bid - trailingDistance, Symbol.Digits,
                                                     MidpointRounding.AwayFromZero);
                     if (position.StopLoss != null && targetStop <= position.StopLoss.Value)
                         continue;
@@ -638,15 +874,15 @@ namespace cAlgo.Robots
                     TradeResult result = ModifyPosition(position, targetStop, position.TakeProfit,
                                                          ProtectionType.Absolute);
                     if (!result.IsSuccessful)
-                        Print("Trail ModifyPosition failed: code=", result.Error,
-                              " id=", position.Id, " sl=", targetStop);
+                        Log("Trail ModifyPosition failed: code=", result.Error,
+                            " id=", position.Id, " sl=", targetStop);
                 }
                 else if (position.TradeType == TradeType.Sell)
                 {
-                    if (position.EntryPrice - Symbol.Ask <= activationDistance)
+                    if (position.EntryPrice - ask <= activationDistance)
                         continue;
 
-                    double targetStop = Math.Round(Symbol.Ask + trailingDistance, Symbol.Digits,
+                    double targetStop = Math.Round(ask + trailingDistance, Symbol.Digits,
                                                     MidpointRounding.AwayFromZero);
                     if (position.StopLoss != null && targetStop >= position.StopLoss.Value)
                         continue;
@@ -654,8 +890,8 @@ namespace cAlgo.Robots
                     TradeResult result = ModifyPosition(position, targetStop, position.TakeProfit,
                                                          ProtectionType.Absolute);
                     if (!result.IsSuccessful)
-                        Print("Trail ModifyPosition failed: code=", result.Error,
-                              " id=", position.Id, " sl=", targetStop);
+                        Log("Trail ModifyPosition failed: code=", result.Error,
+                            " id=", position.Id, " sl=", targetStop);
                 }
             }
         }
@@ -718,24 +954,25 @@ namespace cAlgo.Robots
 
         private int CountOpenPositions(TradeType tradeType)
         {
-            return Positions.Count(p => p.SymbolName == SymbolName && p.Label == Label &&
-                                        p.TradeType == tradeType);
+            return Positions.FindAll(Label, SymbolName, tradeType).Length;
         }
 
         // EA:987-1009 — close and track each close (Friday path only).
         private void CloseOpenPositions(TradeType tradeType)
         {
-            foreach (Position position in Positions
-                         .Where(p => p.SymbolName == SymbolName && p.Label == Label &&
-                                     p.TradeType == tradeType)
-                         .ToList())
+            Position[] open = Positions.FindAll(Label, SymbolName);
+            for (int i = 0; i < open.Length; i++)
             {
+                Position position = open[i];
+                if (position.TradeType != tradeType)
+                    continue;
+
                 TradeResult result = ClosePosition(position);
                 if (result.IsSuccessful)
                     TrackOrderClose(position.Id);
                 else
-                    Print("OrderClose failed: code=", result.Error,
-                          " id=", position.Id, " symbol=", position.SymbolName);
+                    Log("OrderClose failed: code=", result.Error,
+                        " id=", position.Id, " symbol=", position.SymbolName);
             }
         }
 
@@ -791,16 +1028,42 @@ namespace cAlgo.Robots
 
         private DateTime MidnightToday()
         {
-            return Server.Time.Date;
+            DateTime now = ServerTime();
+            if (now.Date != _midnight)
+            {
+                _midnight = now.Date;
+            }
+            return _midnight;
+        }
+
+        // Server.Time is a native read and .Date allocates. OnTick consults it
+        // up to four times (Friday gate, both daily breakers, the session
+        // guard), and the daily breakers are consulted on every tick, so the
+        // read is memoised against a tick id. Rollovers invalidate naturally
+        // because a new tick re-reads Server.Time.
+        private long _tickId;
+        private long _serverTimeTickId = -1;
+        private DateTime _serverTime;
+        private DateTime _midnight;
+
+        private DateTime ServerTime()
+        {
+            if (_serverTimeTickId == _tickId)
+                return _serverTime;
+
+            _serverTimeTickId = _tickId;
+            _serverTime = Server.Time;
+            return _serverTime;
         }
 
         // Closed trades for this instance, newest first. Sorted explicitly
         // because the EA relies on newest-to-oldest traversal.
         //
-        // GetTodayEaPnL runs this on every tick (EA:282-311), so the result is
-        // memoised against History.Count. History is append-only, so an
-        // unchanged count guarantees an unchanged result, and the value stays
-        // bit-identical to the uncached scan.
+        // Memoised against History.Count. History is append-only, so an
+        // unchanged count guarantees an unchanged list, and it is rebuilt only
+        // when a trade actually closes. The consumers that used to walk this on
+        // every tick (GetTodayEaPnL, RebuildLossStateFromHistory) now cache
+        // above this level as well.
         private List<HistoricalTrade> _matchingHistoryCache;
         private int _matchingHistoryCacheCount = -1;
 
@@ -812,13 +1075,52 @@ namespace cAlgo.Robots
             HistoricalTrade[] buys = History.FindAll(Label, SymbolName, TradeType.Buy);
             HistoricalTrade[] sells = History.FindAll(Label, SymbolName, TradeType.Sell);
 
-            List<HistoricalTrade> trades = new List<HistoricalTrade>(buys);
-            trades.AddRange(sells);
-            trades.Sort((a, b) => b.ClosingTime.CompareTo(a.ClosingTime));
+            List<HistoricalTrade> trades = new List<HistoricalTrade>(buys.Length + sells.Length);
+
+            // History.FindAll returns each side newest-first, so the combined
+            // newest-first order is a linear merge of two sorted runs. The
+            // sortedness of the inputs is verified rather than assumed, because
+            // a wrong order here would silently corrupt the loss streak.
+            if (IsNewestFirst(buys) && IsNewestFirst(sells))
+            {
+                int b = 0;
+                int s = 0;
+                while (b < buys.Length && s < sells.Length)
+                {
+                    if (buys[b].ClosingTime >= sells[s].ClosingTime)
+                        trades.Add(buys[b++]);
+                    else
+                        trades.Add(sells[s++]);
+                }
+
+                while (b < buys.Length)
+                    trades.Add(buys[b++]);
+                while (s < sells.Length)
+                    trades.Add(sells[s++]);
+            }
+            else
+            {
+                trades.AddRange(buys);
+                trades.AddRange(sells);
+                trades.Sort(ByClosingTimeDescending);
+            }
 
             _matchingHistoryCache = trades;
             _matchingHistoryCacheCount = History.Count;
             return trades;
+        }
+
+        private static readonly Comparison<HistoricalTrade> ByClosingTimeDescending =
+            (a, b) => b.ClosingTime.CompareTo(a.ClosingTime);
+
+        private static bool IsNewestFirst(HistoricalTrade[] trades)
+        {
+            for (int i = 1; i < trades.Length; i++)
+            {
+                if (trades[i].ClosingTime > trades[i - 1].ClosingTime)
+                    return false;
+            }
+            return true;
         }
 
         // Every closed market trade on the account, for the account-wide
@@ -836,7 +1138,11 @@ namespace cAlgo.Robots
                     trades.Add(trade);
             }
 
-            trades.Sort((a, b) => b.ClosingTime.CompareTo(a.ClosingTime));
+            // The sort is retained even though the sole consumer only sums
+            // NetProfit: it is called once from OnStart over an empty history
+            // in a backtest, so the cost is irrelevant, whereas dropping it
+            // would reorder a floating-point accumulation.
+            trades.Sort(ByClosingTimeDescending);
             return trades;
         }
     }

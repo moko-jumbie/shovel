@@ -1,6 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
+
+        <!-- cTrader restarts the algo child process for every optimiser pass, so
+             both steady-state speed and process startup are on the critical
+             path. -->
+        <Optimize>true</Optimize>
+        <TieredCompilation>false</TieredCompilation>
+        <InvariantGlobalization>true</InvariantGlobalization>
     </PropertyGroup>
 
     <ItemGroup>

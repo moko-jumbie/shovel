@@ -1051,9 +1051,9 @@ void UpdateStrategySnapshot()
       double macroSma = iMA(Symbol(), Period(), SmaPeriod, 0, MODE_SMA, PRICE_CLOSE, idx);
       double cp = Close[idx];
       if(cp > macroSma)
-        { gMacroTrend = "ABOVE 200 SMA"; gMacroColor = ClrProfit; }
+        { gMacroTrend = "ABOVE " + IntegerToString(SmaPeriod) + " SMA"; gMacroColor = ClrProfit; }
       else
-        { gMacroTrend = "BELOW 200 SMA"; gMacroColor = ClrLoss; }
+        { gMacroTrend = "BELOW " + IntegerToString(SmaPeriod) + " SMA"; gMacroColor = ClrLoss; }
      }
    else
      {
@@ -1167,10 +1167,10 @@ string GetSessionLabel()
   {
    int h = TimeHour(TimeCurrent());
 
-   bool inSydney = (h >= 22 || h < 7);
-   bool inTokyo  = (h >= 2 && h < 11);
-   bool inLondon = (h >= 9 && h < 18);
-   bool inNY     = (h >= 15);
+   bool inSydney = (h < 9); // 24(0)-9
+   bool inTokyo  = (h >= 3 && h < 12); // 3-12
+   bool inLondon = (h >= 10 && h < 19); //10-19
+   bool inNY     = (h >= 15); 
 
    if(inLondon && inNY)
       return("NY / LONDON OVERLAP");
@@ -1490,7 +1490,7 @@ void RenderDashboard()
    RenderRow(row++, "  Session / Spread",
              (sessionBlocked ? "BLOCKED" : (spreadGuardTriggered ? "SPREAD LIMIT" : "CLEAR")) + "  |  " + DoubleToString(spreadPips, 1) + "/" + IntegerToString(MaxSpreadPips) + " pips",
              (sessionBlocked || spreadGuardTriggered) ? ClrLoss : ClrText);
-   RenderRow(row++, "  Overall",
+   RenderRow(row++, "  Safeguards",
              breakerActive ? "ACTIVE" : "STABLE",
              breakerActive ? ClrLoss : ClrProfit);
 

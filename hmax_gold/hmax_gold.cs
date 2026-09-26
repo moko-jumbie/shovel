@@ -729,9 +729,9 @@ namespace cAlgo.Robots
 
             int currentHour = ServerTime().Hour;
 
-            bool inSydney = currentHour >= 22 || currentHour < 7;
-            bool inTokyo = currentHour >= 2 && currentHour < 11;
-            bool inLondon = currentHour >= 9 && currentHour < 18;
+            bool inSydney = currentHour < 9; 
+            bool inTokyo = currentHour >= 3 && currentHour < 12;
+            bool inLondon = currentHour >= 10 && currentHour < 19;
             bool inNY = currentHour >= 15;
 
             if (TradeSydney && inSydney) return true;

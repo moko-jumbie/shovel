@@ -789,23 +789,19 @@ bool IsWithinAllowedSession()
 
 // --- Define sessions in BROKER TIME (UTC+3) ---
 
-// Sydney: 22:00–07:00 (spans midnight)
-//   Covers hours 22,23,0,1,2,3,4,5,6
-   if(currentHour >= 22 || currentHour < 7)
+// Sydney: 00:00–09:00
+   if(currentHour < 9)
       inSydney = true;
 
-// Tokyo (Asian): 02:00–11:00
-//   Covers hours 2,3,4,5,6,7,8,9,10
-   if(currentHour >= 2 && currentHour < 11)
+// Tokyo (Asian): 03:00–12:00
+   if(currentHour >= 3 && currentHour < 12)
       inTokyo = true;
 
-// London (European): 09:00–18:00
-//   Covers hours 9,10,11,12,13,14,15,16,17
-   if(currentHour >= 9 && currentHour < 18)
+// London (European): 10:00–19:00
+   if(currentHour >= 10 && currentHour < 19)
       inLondon = true;
 
 // New York: 15:00–24:00 (00:00)
-//   Covers hours 15,16,17,18,19,20,21,22,23
    if(currentHour >= 15)
       inNY = true;
 

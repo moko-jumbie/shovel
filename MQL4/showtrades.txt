@@ -1,0 +1,480 @@
+//+------------------------------------------------------------------+
+//|                                           ShowTrades_Smart.mq4    |
+//|                                  Copyright 2026, AI CyberTrader  |
+//|                                             https://mql4.com     |
+//+------------------------------------------------------------------+
+//|  TradeVisualizer - draws every trade (closed + open) for the     |
+//|  current symbol + magic number onto the chart as:                |
+//|   - trend line at entry price (bounded to trade lifetime)        |
+//|   - arrow (UP = BUY, DOWN = SELL) offset from the entry          |
+//|   - optional SL / TP dashed lines with pip distance              |
+//|   - label with ticket, signed pips, and P/L in money             |
+//|   - compact summary panel (counts, win rate, total pips, P/L)    |
+//|                                                                  |
+//|  PERFORMANCE: history is scanned only on a fresh bar or when     |
+//|  the closed/open order count changes; per-tick work is limited   |
+//|  to the small open-position pool (floating pips + trend end).    |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2026, AI CyberTrader"
+#property link      "https://mql4.com"
+#property version   "1.00"
+#property strict
+#property indicator_chart_window
+#property indicator_buffers 0
+
+//==== INPUTS (user settings) =======================================
+input string _General      = "══════ GENERAL ══════";
+input int    InpMagic      = 84721;        // Magic Number (0 = all)
+input string InpSymbol     = "";           // Symbol ("" = current chart)
+input int    InpMaxTrades  = 500;          // Max history trades drawn (0 = all)
+input int    InpArrowPips  = 1;            // Arrow offset from entry (pips)
+input int    InpTextShift  = 3;            // Label offset (bars to the right)
+
+input string _Draw         = "══════ DRAW STYLE ══════";
+input bool   InpShowSLTP   = true;         // Draw SL / TP dashed lines
+input int    InpFontSize   = 8;            // Label font size
+input int    InpPanelX     = 16;           // Panel X offset
+input int    InpPanelY     = 20;           // Panel Y offset
+
+input string _Colors       = "══════ CYBERPUNK COLORS ══════";
+input color  ClrBuy        = C'0,255,102';  // BUY (Laser Green)
+input color  ClrSell       = C'255,51,51';  // SELL (Crimson Red)
+input color  ClrSL         = C'120,125,135';// Stop Loss (Dim Silver)
+input color  ClrTP         = C'255,204,0';  // Take Profit (Amber)
+input color  ClrText       = C'180,190,200';// Ghost White
+input color  ClrDim        = C'90,95,105';  // Dim Gray
+input color  ClrProfit     = C'0,255,102';  // positive P/L
+input color  ClrLoss       = C'255,51,51';  // negative P/L
+input color  ClrAccent     = C'0,180,255';  // Electric Blue
+
+//==== GLOBAL STATE =================================================
+string Prefix       = "ShowTrades_";
+string Sym          = "";
+int    DigitsN      = 0;
+double PointV       = 0.0;
+double PipV         = 0.0;
+datetime lastBarTime   = 0;
+int    lastHistTotal  = -1;
+int    lastOpenTotal  = -1;
+
+struct HistRec
+  {
+   int       ticket;
+   datetime  ot;
+  };
+
+//+------------------------------------------------------------------+
+//| Resolve display symbol / pip size (cached - not per-call)        |
+//+------------------------------------------------------------------+
+void CacheSymbolParams()
+  {
+   Sym = (StringLen(InpSymbol) > 0) ? InpSymbol : Symbol();
+   if(MarketInfo(Sym, MODE_DIGITS) <= 0)              // requested symbol unusable
+      Sym = Symbol();
+   DigitsN = (int)MarketInfo(Sym, MODE_DIGITS);
+   PointV  = MarketInfo(Sym, MODE_POINT);
+   PipV    = PointV * ((DigitsN == 5 || DigitsN == 3) ? 10.0 : 1.0);
+  }
+
+double CurrentPrice(int type)
+  {
+   if(Sym == Symbol())
+      return(type == OP_BUY ? Bid : Ask);            // fast path - chart symbol
+   return(type == OP_BUY ? MarketInfo(Sym, MODE_BID) : MarketInfo(Sym, MODE_ASK));
+  }
+
+bool IsOurOrder()
+  {
+   return(OrderSymbol() == Sym &&
+          (InpMagic == 0 || OrderMagicNumber() == InpMagic) &&
+          (OrderType() == OP_BUY || OrderType() == OP_SELL));
+  }
+
+double SignedPips(int type, double enter, double exit)
+  {
+   double diff = (type == OP_BUY) ? (exit - enter) : (enter - exit);
+   return(diff / PipV);
+  }
+
+string ObjName(int ticket, char kind) { return(StringFormat("ShowTrades_%c_%d", kind, ticket)); }
+string PanelName(int idx)             { return(StringFormat("ShowTrades_P_%d", idx)); }
+
+//+------------------------------------------------------------------+
+//| Entry line from open->(close|now) with SL/TP dashes              |
+//+------------------------------------------------------------------+
+void DrawEntryLines(int ticket, int type, double enter, double sl, double tp,
+                    datetime tOpen, datetime tEnd, bool isOpen)
+  {
+   color lineColor = (type == OP_BUY) ? ClrBuy : ClrSell;
+   string nm = ObjName(ticket, 'E');
+   bool created = (ObjectFind(0, nm) < 0);
+   if(created)
+     {
+      // create at the FULL open->end span so dash/solid anchors are correct from the start
+      ObjectCreate(0, nm, OBJ_TREND, 0, tOpen, enter, tEnd, enter);
+      ObjectSetInteger(0, nm, OBJPROP_COLOR, lineColor);
+      ObjectSetInteger(0, nm, OBJPROP_WIDTH, 1);
+      ObjectSetInteger(0, nm, OBJPROP_STYLE, STYLE_SOLID);
+      ObjectSetInteger(0, nm, OBJPROP_RAY, false);
+      ObjectSetInteger(0, nm, OBJPROP_BACK, false);
+      ObjectSetInteger(0, nm, OBJPROP_SELECTABLE, false);
+     }
+   // never re-anchor a finished (closed) line: re-anchoring re-bases the
+   // dash pattern and makes it render at the wrong length on each redraw
+   if(created || isOpen)
+     {
+      ObjectMove(0, nm, 0, tOpen, enter);
+      ObjectMove(0, nm, 1, tEnd,  enter);
+     }
+
+   if(InpShowSLTP)
+     {
+      // SL dash (closed trades: dashed, open trades: solid thin + live)
+      DrawLevel(ticket, 'S', tOpen, tEnd, sl, ClrSL, isOpen ? STYLE_SOLID : STYLE_DASH);
+      // TP dash
+      DrawLevel(ticket, 'T', tOpen, tEnd, tp, ClrTP, isOpen ? STYLE_SOLID : STYLE_DASH);
+     }
+  }
+
+void DrawLevel(int ticket, char kind, datetime t1, datetime t2, double price, color clr, int style)
+  {
+   if(price <= 0.0) return;
+   string nm = ObjName(ticket, kind);
+   bool created = (ObjectFind(0, nm) < 0);
+   if(created)
+     {
+      ObjectCreate(0, nm, OBJ_TREND, 0, t1, price, t2, price);
+      ObjectSetInteger(0, nm, OBJPROP_COLOR, clr);
+      ObjectSetInteger(0, nm, OBJPROP_WIDTH, 1);
+      ObjectSetInteger(0, nm, OBJPROP_STYLE, style);
+      ObjectSetInteger(0, nm, OBJPROP_RAY, false);
+      ObjectSetInteger(0, nm, OBJPROP_SELECTABLE, false);
+      ObjectMove(0, nm, 0, t1, price);   // anchors already span t1..t2 at create
+      ObjectMove(0, nm, 1, t2, price);   // keep one pass for consistency
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Arrow at entry (offset so the tip touches the entry line)        |
+//+------------------------------------------------------------------+
+void DrawArrow(int ticket, int type, datetime tEnter, double enter)
+  {
+   string nm = ObjName(ticket, 'A');
+   int    code = (type == OP_BUY) ? OBJ_ARROW_UP : OBJ_ARROW_DOWN;
+   double off  = InpArrowPips * PipV;
+   double y    = (type == OP_BUY) ? enter + off : enter - off;
+
+   if(ObjectFind(0, nm) < 0)
+     {
+      ObjectCreate(0, nm, OBJ_ARROW, 0, tEnter, y);
+      ObjectSetInteger(0, nm, OBJPROP_ARROWCODE, code);
+      ObjectSetInteger(0, nm, OBJPROP_COLOR, (type == OP_BUY) ? ClrBuy : ClrSell);
+      ObjectSetInteger(0, nm, OBJPROP_WIDTH, 2);
+      ObjectSetInteger(0, nm, OBJPROP_SELECTABLE, false);
+     }
+   ObjectMove(0, nm, 0, tEnter, y);
+  }
+
+//+------------------------------------------------------------------+
+//| Pips + money info label                                          |
+//+------------------------------------------------------------------+
+void DrawInfoText(int ticket, int type, double pips, double money, datetime tEnter)
+  {
+   string nm = ObjName(ticket, 'L');        // 'L' = label; 'T' is reserved for the TP line
+   string text = StringFormat("#%d  %s  %+.1fp  %+.2f", ticket,
+                              (type == OP_BUY) ? "BUY " : "SELL", pips, money);
+   // anchor a few bars right of the entry bar so text does not hide the arrow
+   int bar = iBarShift(Sym, 0, tEnter, false);
+   datetime tLbl = tEnter;                                  // chart data does not reach entry?
+   if(bar >= 0)
+     {
+      bar -= InpTextShift;
+      tLbl = iTime(Sym, 0, (bar >= 0 ? bar : 0));
+     }
+
+   if(ObjectFind(0, nm) < 0)
+     {
+      ObjectCreate(0, nm, OBJ_TEXT, 0, tLbl, GetArrowY(type, 0.0));
+      ObjectSetInteger(0, nm, OBJPROP_FONTSIZE, InpFontSize);
+      ObjectSetInteger(0, nm, OBJPROP_SELECTABLE, false);
+     }
+   // text rides the arrow level; color reflects P/L
+   ObjectMove(0, nm, 0, tLbl, GetArrowY(type, OrderOpenPrice()));
+   ObjectSetText(nm, text, InpFontSize, "Consolas", (money >= 0.0) ? ClrProfit : ClrLoss);
+  }
+
+double GetArrowY(int type, double enter)
+  {
+   double off = InpArrowPips * PipV;
+   return((type == OP_BUY) ? enter + off : enter - off);
+  }
+
+//+------------------------------------------------------------------+
+//| Delete every object belonging to one ticket                      |
+//+------------------------------------------------------------------+
+void DeleteTradeObjects(int ticket)
+  {
+   ObjectDelete(0, ObjName(ticket, 'E'));
+   ObjectDelete(0, ObjName(ticket, 'A'));
+   ObjectDelete(0, ObjName(ticket, 'S'));
+   ObjectDelete(0, ObjName(ticket, 'T'));
+   ObjectDelete(0, ObjName(ticket, 'L'));
+  }
+
+//+------------------------------------------------------------------+
+//| Rebuild closed-history drawings (only on new bar / count change) |
+//+------------------------------------------------------------------+
+void DrawClosedHistory()
+  {
+   int hist = OrdersHistoryTotal();
+   if(hist <= 0) return;
+
+   // Pass 1: count matches into a pre-sized array (avoid resize-in-loop)
+   HistRec rec[];
+   ArrayResize(rec, hist);
+   int cnt = 0;
+   for(int i = 0; i < hist; i++)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_HISTORY) && IsOurOrder())
+        {
+         rec[cnt].ticket = OrderTicket();
+         rec[cnt].ot     = OrderOpenTime();
+         cnt++;
+        }
+     }
+   if(cnt == 0) return;
+
+   // Draw the most recent N matches (history is chronological oldest->newest)
+   int start = (InpMaxTrades > 0 && cnt > InpMaxTrades) ? cnt - InpMaxTrades : 0;
+   for(int i = start; i < cnt; i++)
+     {
+      if(!OrderSelect(rec[i].ticket, SELECT_BY_TICKET, MODE_HISTORY)) continue;
+      int type  = OrderType();
+      double enter = OrderOpenPrice();
+      double sl    = OrderStopLoss();
+      double tp    = OrderTakeProfit();
+      datetime tOpen  = rec[i].ot;
+      datetime tEnd   = OrderCloseTime();
+      double   pips  = SignedPips(type, enter, OrderClosePrice());
+      double   money = OrderProfit() + OrderSwap() + OrderCommission();
+
+      // a trade drawn while OPEN has a stale end time (pinned to the last
+      // live tick); on close, drop its objects so they are recreated with
+      // the true open->close span. finished trades are never re-anchored.
+      string eNm = ObjName(rec[i].ticket, 'E');
+      if(ObjectFind(0, eNm) >= 0 &&
+         (datetime)ObjectGetInteger(0, eNm, OBJPROP_TIME, 1) != tEnd)
+         DeleteTradeObjects(rec[i].ticket);
+
+      DrawEntryLines(rec[i].ticket, type, enter, sl, tp, tOpen, tEnd, false);
+      DrawArrow(rec[i].ticket, type, tOpen, enter);
+      DrawInfoText(rec[i].ticket, type, pips, money, tOpen);
+     }
+   ChartRedraw(0);
+  }
+
+//+------------------------------------------------------------------+
+//| (Re)draw the open-position pool (created on change)              |
+//+------------------------------------------------------------------+
+void DrawOpenPool()
+  {
+   int total = OrdersTotal();
+   for(int i = total - 1; i >= 0; i--)          // backwards: pool may shift
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES) && IsOurOrder())
+        {
+         int type = OrderType();
+         double enter = OrderOpenPrice();
+         double sl    = OrderStopLoss();
+         double tp    = OrderTakeProfit();
+         datetime tOpen = OrderOpenTime();
+         double exit = CurrentPrice(type);
+         double pips = SignedPips(type, enter, exit);
+         double money = OrderProfit() + OrderSwap() + OrderCommission();
+
+         DrawEntryLines(OrderTicket(), type, enter, sl, tp, tOpen, TimeCurrent(), true);
+         DrawArrow(OrderTicket(), type, tOpen, enter);
+         DrawInfoText(OrderTicket(), type, pips, money, tOpen);
+        }
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Per-tick refresh of open trades only (cheap - few objects)       |
+//+------------------------------------------------------------------+
+void UpdateOpenPool()
+  {
+   int total = OrdersTotal();
+   int now   = (int)TimeCurrent();
+   for(int i = total - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES) && IsOurOrder())
+        {
+         int ticket = OrderTicket();
+         int type   = OrderType();
+         double enter = OrderOpenPrice();
+         double exit = CurrentPrice(type);
+         double pips = SignedPips(type, enter, exit);
+         double money = OrderProfit() + OrderSwap() + OrderCommission();
+
+         // keep the entry trend running to the latest bar
+         ObjectMove(0, ObjName(ticket, 'E'), 1, now, enter);
+         if(OrderStopLoss()  > 0.0) ObjectMove(0, ObjName(ticket, 'S'), 1, now, OrderStopLoss());
+         if(OrderTakeProfit() > 0.0) ObjectMove(0, ObjName(ticket, 'T'), 1, now, OrderTakeProfit());
+
+         string nm = ObjName(ticket, 'L');
+         if(ObjectFind(0, nm) >= 0)
+           {
+            string text = StringFormat("#%d  %s  %+.1fp  %+.2f", ticket,
+                                       (type == OP_BUY) ? "BUY " : "SELL", pips, money);
+            ObjectSetText(nm, text, InpFontSize, "Consolas",
+                          (money >= 0.0) ? ClrProfit : ClrLoss);
+           }
+}
+      }
+   ChartRedraw(0);                       // keep floating pips + trend ends moving live
+  }
+
+//+------------------------------------------------------------------+
+//| Summary panel                                                    |
+//+------------------------------------------------------------------+
+void BuildPanel()
+  {
+   int ct = 0, cw = 0, cl = 0;
+   double cpips = 0.0, cmoney = 0.0;
+   int hist = OrdersHistoryTotal();
+   for(int i = 0; i < hist; i++)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_HISTORY) && IsOurOrder())
+        {
+         int type = OrderType();
+         ct++;
+         double pips = SignedPips(type, OrderOpenPrice(), OrderClosePrice());
+         double money = OrderProfit() + OrderSwap() + OrderCommission();
+         cpips += pips;
+         cmoney += money;
+         if(money >= 0.0) cw++; else cl++;
+        }
+     }
+
+   int ot = 0;
+   double opips = 0.0, omoney = 0.0;
+   int total = OrdersTotal();
+   for(int i = total - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES) && IsOurOrder())
+        {
+         int type = OrderType();
+         double pips = SignedPips(type, OrderOpenPrice(), CurrentPrice(type));
+         ot++;
+         opips += pips;
+         omoney += OrderProfit() + OrderSwap() + OrderCommission();
+        }
+     }
+
+   string lines[6];
+   lines[0] = StringFormat("TRADES  %s [m%d]", Sym, InpMagic);
+   lines[1] = StringFormat("CLOSED  %d | W %d  L %d | WR %.0f%%",
+                           ct, cw, cl, (ct > 0 ? 100.0 * cw / ct : 0.0));
+   lines[2] = StringFormat("  PIPS  %+.1f   P/L %+.2f", cpips, cmoney);
+   lines[3] = StringFormat("OPEN    %d | %+.1fp | %+.2f", ot, opips, omoney);
+   lines[4] = "────────────────────────────";
+   lines[5] = "ShowTrades_Smart v1.00";
+
+   // panel is cheap to rebuild; it only runs on structural changes
+   ObjectsDeleteAll(0, "ShowTrades_P_");
+
+   color hdr   = ClrAccent;
+   color dim   = ClrDim;
+   color val   = ClrText;
+   color openc = (omoney >= 0.0) ? ClrProfit : ClrLoss;
+   color closec= (cmoney >= 0.0) ? ClrProfit : ClrLoss;
+
+   for(int i = 0; i < ArraySize(lines); i++)
+     {
+      string nm = PanelName(i);
+      ObjectCreate(0, nm, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, nm, OBJPROP_CORNER, CORNER_RIGHT_UPPER);
+      ObjectSetInteger(0, nm, OBJPROP_XDISTANCE, InpPanelX);
+      ObjectSetInteger(0, nm, OBJPROP_YDISTANCE, InpPanelY + i * (InpFontSize + 6));
+      ObjectSetInteger(0, nm, OBJPROP_ANCHOR, ANCHOR_RIGHT_UPPER);
+      color c = (i == 0) ? hdr : (i == 4 || i == 5) ? dim : val;
+      if(i == 2) c = closec;
+      if(i == 3) c = openc;
+      ObjectSetText(nm, lines[i], InpFontSize, "Consolas", c);
+     }
+   ChartRedraw(0);
+  }
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization                                  |
+//+------------------------------------------------------------------+
+int OnInit()
+  {
+   CacheSymbolParams();
+   ObjectsDeleteAll(0, Prefix);
+   lastBarTime    = 0;
+   lastHistTotal  = -1;
+   lastOpenTotal  = -1;
+   return(INIT_SUCCEEDED);
+  }
+
+//+------------------------------------------------------------------+
+//| Custom indicator deinitialization                                |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+  {
+   ObjectsDeleteAll(0, Prefix);
+   ChartRedraw(0);
+  }
+
+//+------------------------------------------------------------------+
+//| Indicator iteration - redraw policy for performance              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+  {
+   bool fullReset = (prev_calculated == 0);                 // attach / input change
+   bool newBar    = (time[rates_total - 1] != lastBarTime);
+   int  histTotal = OrdersHistoryTotal();
+   int  openTotal = OrdersTotal();
+
+   if(fullReset)
+     {
+      CacheSymbolParams();                                  // inputs may have changed
+      ObjectsDeleteAll(0, Prefix);
+      DrawClosedHistory();
+      DrawOpenPool();
+      BuildPanel();
+      lastBarTime   = time[rates_total - 1];
+      lastHistTotal = histTotal;
+      lastOpenTotal = openTotal;
+      return(rates_total);
+     }
+
+   if(newBar || histTotal != lastHistTotal)
+      DrawClosedHistory();                                  // history: only on change
+
+   if(newBar || openTotal != lastOpenTotal)
+      DrawOpenPool();                                       // structural open change
+
+   if(openTotal > 0)
+      UpdateOpenPool();                                     // cheap per-tick floating refresh
+
+   if(newBar || histTotal != lastHistTotal || openTotal != lastOpenTotal)
+      BuildPanel();
+
+   lastBarTime   = time[rates_total - 1];
+   lastHistTotal = histTotal;
+   lastOpenTotal = openTotal;
+   return(rates_total);
+  }
+//+------------------------------------------------------------------+

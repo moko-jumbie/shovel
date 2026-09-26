@@ -1,0 +1,650 @@
+//+------------------------------------------------------------------+
+//|                                        CyberMatrixDash.mq4       |
+//|                                  Copyright 2026, AI CyberTrader  |
+//|                                             https://mql4.com     |
+//+------------------------------------------------------------------+
+#property copyright "Copyright 2026, AI CyberTrader"
+#property link      "https://mql4.com"
+#property version   "3.00"
+#property indicator_chart_window
+#property indicator_buffers 0
+
+//--- Input Parameters
+input string _Display    = "══════ DISPLAY CONFIGURATION ══════";
+input int      InpXOffset   = 20;           // Panel X Position
+input int      InpYOffset   = 30;           // Panel Y Position
+input int      InpFontSize  = 8;            // Font Size
+
+input string _Colors    = "══════ CYBERPUNK COLOR SPECTRUM ══════";
+input color    ClrBg        = C'10,12,18';    // Void Black Background
+input color    ClrBorder    = C'0,255,204';   // Neon Cyan
+input color    ClrHeader    = C'255,102,0';   // Neon Orange
+input color    ClrText      = C'180,190,200'; // Ghost White
+input color    ClrDim       = C'90,95,105';   // Dim Gray
+input color    ClrProfit    = C'0,255,102';   // Laser Green
+input color    ClrLoss      = C'255,51,51';   // Crimson Red
+input color    ClrWarn      = C'255,204,0';   // Amber Warning
+input color    ClrAccent    = C'0,180,255';   // Electric Blue
+input color    ClrPanelBg   = C'18,22,30';    // Panel Background
+
+//--- Global Structures & Arrays
+struct MagicData
+  {
+   int               magic_id;
+   int               open_count;
+   double            open_pnl;
+   double            open_volume;
+   int               hist_count;
+   int               hist_wins;
+   int               hist_losses;
+   double            hist_pnl;
+   double            hist_gross_profit;
+   double            hist_gross_loss;
+  };
+
+struct SymbolData
+  {
+   string            symbol;
+   int               open_count;
+   double            open_pnl;
+  };
+
+MagicData  magics[];
+SymbolData sym_data[];
+int        total_magics  = 0;
+int        total_symbols = 0;
+string     PanelPrefix   = "CyberDash_";
+int        RowHeight     = 16;
+int        PanelWidth    = 980;
+int        MaxRenderedRows = 0;
+int        Col1Width     = 430;
+int        Col2XOffset   = 480;
+int        DividerX      = 465;
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+  {
+   ObjectsDeleteAll(0, PanelPrefix);
+   RefreshDataEngine();
+   EventSetTimer(1);
+   return(INIT_SUCCEEDED);
+  }
+
+//+------------------------------------------------------------------+
+//| Custom indicator deinitialization function                       |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+  {
+   EventKillTimer();
+   ObjectsDeleteAll(0, PanelPrefix);
+   ChartRedraw(0);
+  }
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+  {
+   return(rates_total);
+  }
+
+//+------------------------------------------------------------------+
+//| Timer telemetry loop                                             |
+//+------------------------------------------------------------------+
+void OnTimer()
+  {
+   RefreshDataEngine();
+  }
+
+//+------------------------------------------------------------------+
+//| Locate or create magic tracking index                            |
+//+------------------------------------------------------------------+
+int FindOrCreateMagicIndex(int id)
+  {
+   for(int i = 0; i < total_magics; i++)
+     {
+      if(magics[i].magic_id == id)
+         return(i);
+     }
+   total_magics++;
+   ArrayResize(magics, total_magics);
+   int n = total_magics - 1;
+   magics[n].magic_id         = id;
+   magics[n].open_count       = 0;
+   magics[n].open_pnl         = 0;
+   magics[n].open_volume      = 0;
+   magics[n].hist_count       = 0;
+   magics[n].hist_wins        = 0;
+   magics[n].hist_losses      = 0;
+   magics[n].hist_pnl         = 0;
+   magics[n].hist_gross_profit = 0;
+   magics[n].hist_gross_loss   = 0;
+   return(n);
+  }
+
+//+------------------------------------------------------------------+
+//| Locate or create symbol tracking index                           |
+//+------------------------------------------------------------------+
+int FindOrCreateSymbolIndex(string sym)
+  {
+   for(int i = 0; i < total_symbols; i++)
+     {
+      if(sym_data[i].symbol == sym)
+         return(i);
+     }
+   total_symbols++;
+   ArrayResize(sym_data, total_symbols);
+   int n = total_symbols - 1;
+   sym_data[n].symbol     = sym;
+   sym_data[n].open_count = 0;
+   sym_data[n].open_pnl   = 0;
+   return(n);
+  }
+
+//+------------------------------------------------------------------+
+//| Build horizontal bar string for visual gauge                     |
+//+------------------------------------------------------------------+
+string BuildBar(int filled, int max_len)
+  {
+   string bar = "";
+   for(int i = 0; i < max_len; i++)
+     {
+      if(i < filled)
+         bar += "█";
+      else
+         bar += "░";
+     }
+   return(bar);
+  }
+
+//+------------------------------------------------------------------+
+//| Get session label based on current hour                          |
+//+------------------------------------------------------------------+
+string GetSessionLabel()
+  {
+   int h = Hour();
+   if(h >= 0  && h < 7)   return("ASIAN SESSION");
+   if(h >= 7  && h < 12)  return("LONDON SESSION");
+   if(h >= 12 && h < 16)  return("NY / LONDON OVERLAP");
+   if(h >= 16 && h < 21)  return("NEW YORK SESSION");
+   return("OFF-HOURS");
+  }
+
+//+------------------------------------------------------------------+
+//| Primary telemetry parsing and GUI rendering engine               |
+//+------------------------------------------------------------------+
+void RefreshDataEngine()
+  {
+//--- 0. Delete ALL stale label objects before rendering
+   int total_objects = ObjectsTotal(0, -1);
+   for(int idx = total_objects - 1; idx >= 0; idx--)
+     {
+      string obj_name = ObjectName(0, idx);
+      if(StringFind(obj_name, PanelPrefix + "L_") == 0)
+         ObjectDelete(0, obj_name);
+     }
+   MaxRenderedRows = 0;
+
+//--- 1. Reset metrics registries
+   total_magics  = 0;
+   total_symbols = 0;
+   ArrayResize(magics, 0);
+   ArrayResize(sym_data, 0);
+
+//--- 2. Scan active positions
+   int total_open = 0;
+   double total_floating_pnl = 0;
+   double total_buy_pnl = 0, total_sell_pnl = 0;
+   int total_buys = 0, total_sells = 0;
+   double total_open_volume = 0;
+
+   for(int i = OrdersTotal() - 1; i >= 0; i--)
+     {
+      if(OrderSelect(i, SELECT_BY_POS, MODE_TRADES))
+        {
+         idx = FindOrCreateMagicIndex(OrderMagicNumber());
+         magics[idx].open_count++;
+         double pnl = OrderProfit() + OrderSwap() + OrderCommission();
+         magics[idx].open_pnl += pnl;
+         magics[idx].open_volume += OrderLots();
+
+         int si = FindOrCreateSymbolIndex(OrderSymbol());
+         sym_data[si].open_count++;
+         sym_data[si].open_pnl += pnl;
+
+         total_open++;
+         total_floating_pnl += pnl;
+         total_open_volume += OrderLots();
+         if(OrderType() == OP_BUY)
+           { total_buys++; total_buy_pnl += pnl; }
+         else
+           { total_sells++; total_sell_pnl += pnl; }
+        }
+     }
+
+//--- 3. Scan historical trades
+   int hist_total = OrdersHistoryTotal();
+   double hist_total_pnl = 0;
+   int hist_total_trades = 0;
+   int hist_total_wins = 0;
+   int hist_today_trades = 0;
+   double hist_today_pnl = 0;
+   int hist_week_trades = 0;
+   double hist_week_pnl = 0;
+   int hist_month_trades = 0;
+   double hist_month_pnl = 0;
+   double largest_win = 0, largest_loss = 0;
+   double global_gross_profit = 0, global_gross_loss = 0;
+
+   datetime today_start  = StringToTime(TimeToString(TimeCurrent(), TIME_DATE));
+   int day_of_week       = DayOfWeek();
+   datetime week_start   = today_start - ((day_of_week == 0) ? 6 : day_of_week - 1) * 86400;
+   int day_of_month      = TimeDay(TimeCurrent());
+   datetime month_start  = today_start - (day_of_month - 1) * 86400;
+
+   for(int j = 0; j < hist_total; j++)
+     {
+      if(OrderSelect(j, SELECT_BY_POS, MODE_HISTORY))
+        {
+         int type = OrderType();
+         if(type == OP_BUY || type == OP_SELL)
+           {
+            int idx2 = FindOrCreateMagicIndex(OrderMagicNumber());
+            magics[idx2].hist_count++;
+            double net_pnl = OrderProfit() + OrderSwap() + OrderCommission();
+            magics[idx2].hist_pnl += net_pnl;
+
+            if(net_pnl >= 0)
+              {
+               magics[idx2].hist_wins++;
+               magics[idx2].hist_gross_profit += net_pnl;
+               if(net_pnl > largest_win) largest_win = net_pnl;
+              }
+            else
+              {
+               magics[idx2].hist_losses++;
+               magics[idx2].hist_gross_loss += MathAbs(net_pnl);
+               if(net_pnl < largest_loss) largest_loss = net_pnl;
+              }
+
+            global_gross_profit += (net_pnl >= 0) ? net_pnl : 0;
+            global_gross_loss   += (net_pnl < 0)  ? MathAbs(net_pnl) : 0;
+            hist_total_pnl += net_pnl;
+            hist_total_trades++;
+            if(net_pnl >= 0) hist_total_wins++;
+
+            datetime close_time = OrderCloseTime();
+            if(close_time >= today_start)
+              { hist_today_trades++; hist_today_pnl += net_pnl; }
+            if(close_time >= week_start)
+              { hist_week_trades++; hist_week_pnl += net_pnl; }
+            if(close_time >= month_start)
+              { hist_month_trades++; hist_month_pnl += net_pnl; }
+           }
+        }
+     }
+
+//--- 4. Compute derived metrics
+   double equity         = AccountEquity();
+   double balance        = AccountBalance();
+   double free_margin    = AccountFreeMargin();
+   double margin_level   = (AccountMargin() > 0) ? (equity / AccountMargin()) * 100 : 0;
+   double margin_used_pct = (balance > 0) ? ((balance - free_margin) / balance) * 100 : 0;
+   double drawdown_abs   = balance - equity;
+   double drawdown_pct   = (balance > 0) ? (drawdown_abs / balance) * 100 : 0;
+
+   double overall_wr      = (hist_total_trades > 0) ? ((double)hist_total_wins / hist_total_trades) * 100.0 : 0;
+   double profit_factor   = (global_gross_loss > 0) ? global_gross_profit / global_gross_loss : 0;
+   double expectancy      = (hist_total_trades > 0) ? hist_total_pnl / hist_total_trades : 0;
+   int total_wins_count   = hist_total_wins;
+   int total_losses_count = hist_total_trades - total_wins_count;
+   double avg_win  = (total_wins_count > 0)   ? global_gross_profit / total_wins_count : 0;
+   double avg_loss = (total_losses_count > 0) ? global_gross_loss   / total_losses_count : 0;
+
+   double atr_val       = iATR(Symbol(), Period(), 14, 0);
+   double daily_high    = iHigh(Symbol(), PERIOD_D1, 0);
+   double daily_low     = iLow(Symbol(), PERIOD_D1, 0);
+   double daily_range   = daily_high - daily_low;
+   double current_spread = MarketInfo(Symbol(), MODE_SPREAD);
+   double point_val     = MarketInfo(Symbol(), MODE_POINT);
+   int    digits        = (int)MarketInfo(Symbol(), MODE_DIGITS);
+
+   int buy_pct = (total_open > 0) ? MathMin((total_buys * 10) / total_open, 10) : 0;
+
+//--- 5. Count rows for dynamic height (two-column layout - use max of columns)
+   int rows_col1 = 0;
+   int rows_col2 = 0;
+   
+   // Left column: Account Overview + Market Intel + Position Summary
+   rows_col1 += 3;       // Header
+   rows_col1 += 8;       // Account overview
+   rows_col1 += 1;       // Separator
+   rows_col1 += 6;       // Market intelligence
+   rows_col1 += 1;       // Separator
+   rows_col1 += 5;       // Position summary
+   rows_col1 += 5;       // Growth & Time Statistics
+   
+   // Right column: Performance + Time Stats + Trade History + Magic Matrix + Symbol Exposure + Footer
+   rows_col2 += 7;       // Performance metrics
+   rows_col2 += 1;       // Separator
+   rows_col2 += 3;       // Time-based stats
+   rows_col2 += 1;       // Separator
+   rows_col2 += 6;       // Trade history (new)
+   rows_col2 += 1;       // Separator
+   rows_col2 += 3;       // Magic matrix header
+   rows_col2 += total_magics;
+   rows_col2 += 1;       // Separator
+   rows_col2 += 3;       // Symbol exposure header + data rows
+   rows_col2 += total_symbols;
+   rows_col2 += 4;       // Footer
+   
+   int total_rows_used = MathMax(rows_col1, rows_col2) + 1;
+
+   int panel_height    = (int)((total_rows_used * RowHeight)) + 40;
+
+//--- 6. Render background panel
+   DrawPanelBG(PanelPrefix + "BG", InpXOffset, InpYOffset, PanelWidth, panel_height);
+   
+//--- Draw vertical divider between columns
+   DrawDivider(PanelPrefix + "Div", InpXOffset + DividerX, InpYOffset + 8, panel_height - 16);
+
+   int row = 0;
+
+//--- ═══════════════════════════════════════════════════════════════
+//--- HEADER (spans full width)
+//--- ═══════════════════════════════════════════════════════════════
+   int row_left = 0;
+   int row_right = 0;
+   
+   string d = ShortToString(1002); 
+   
+   RenderRow2(row_left++, "╔════════════════════════════════════════════════════╗", "", 0, ClrBorder, true);
+   RenderRow2(row_left++, "║         | CYBER MATRIX DASHBOARD v3.0 |            ║", "", 0, ClrHeader, true);
+   RenderRow2(row_left++, "╚════════════════════════════════════════════════════╝", "", 0, ClrBorder, true);
+   row_right = row_left;
+
+//--- ═══════════════════════════════════════════════════════════════
+//--- LEFT COLUMN: ACCOUNT OVERVIEW + MARKET INTELLIGENCE + POSITION SUMMARY
+//--- ═══════════════════════════════════════════════════════════════
+   RenderRow2(row_left++, "─── ACCOUNT OVERVIEW ────────────────────────────────", "", 0, ClrAccent, true);
+   RenderRow2(row_left++, "  Balance", DoubleToString(balance, 2), 0, ClrText);
+   RenderRow2(row_left++, "  Equity", DoubleToString(equity, 2), 0, (equity >= balance) ? ClrProfit : ClrLoss);
+   RenderRow2(row_left++, "  Free Margin", DoubleToString(free_margin, 2), 0, ClrText);
+   RenderRow2(row_left++, "  Margin Level", (AccountMargin() > 0) ? DoubleToString(margin_level, 1) + "%" : "∞ (No Margin)", 0,
+              (margin_level < 200 && margin_level > 0) ? ClrLoss : ClrText);
+   RenderRow2(row_left++, "  Margin Used", BuildBar((int)MathRound(margin_used_pct / 10), 10) + " " + DoubleToString(margin_used_pct, 1) + "%", 0,
+              (margin_used_pct > 80) ? ClrLoss : (margin_used_pct > 50) ? ClrWarn : ClrProfit);
+   RenderRow2(row_left++, "  Drawdown", DoubleToString(drawdown_pct, 2) + "% (" + DoubleToString(drawdown_abs, 2) + ")", 0,
+              (drawdown_pct > 10) ? ClrLoss : (drawdown_pct > 5) ? ClrWarn : ClrProfit);
+   RenderRow2(row_left++, "  Leverage", "1:" + IntegerToString(AccountLeverage()), 0, ClrText);
+   RenderRow2(row_left++, "  Account", IsDemo() ? "DEMO" : "LIVE", 0, ClrAccent);
+
+   row_left++;
+   RenderRow2(row_left++, "─── MARKET INTELLIGENCE ──────────────────────────────", "", 0, ClrAccent, true);
+   RenderRow2(row_left++, "  Symbol", Symbol(), 0, ClrText);
+   RenderRow2(row_left++, "  Session", GetSessionLabel(), 0, ClrWarn);
+   RenderRow2(row_left++, "  Bid / Ask", DoubleToString(Bid, digits) + " / " + DoubleToString(Ask, digits), 0, ClrText);
+   RenderRow2(row_left++, "  Spread", DoubleToString(current_spread, 1) + " pts", 0,
+              (current_spread > 30) ? ClrLoss : ClrText);
+   RenderRow2(row_left++, "  ATR (14)", DoubleToString(atr_val / point_val, 1) + " pts", 0, ClrText);
+   RenderRow2(row_left++, "  Daily Range", DoubleToString(daily_range / point_val, 1) + " pts", 0, ClrText);
+
+   row_left++;
+   RenderRow2(row_left++, "─── POSITION SUMMARY ─────────────────────────────────", "", 0, ClrAccent, true);
+   RenderRow2(row_left++, "  Open Positions", IntegerToString(total_open), 0, ClrText);
+   RenderRow2(row_left++, "  Floating P&L", DoubleToString(total_floating_pnl, 2), 0,
+              (total_floating_pnl >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(row_left++, "  Buys / Sells", IntegerToString(total_buys) + " / " + IntegerToString(total_sells) +
+              "    [" + BuildBar(buy_pct, 10) + "]", 0, ClrText);
+   RenderRow2(row_left++, "  Buy P&L / Sell P&L", DoubleToString(total_buy_pnl, 2) + " / " + DoubleToString(total_sell_pnl, 2), 0,
+              (total_floating_pnl >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(row_left++, "  Total Volume", DoubleToString(total_open_volume, 2) + " lots", 0, ClrText);
+
+   row_left++;
+   RenderRow2(row_left++, "─── GROWTH & TIME STATISTICS ──────────────────────────", "", 0, ClrAccent, true);
+   double total_today = hist_today_pnl + total_floating_pnl;
+   double total_week = hist_week_pnl + total_floating_pnl;
+   double total_month = hist_month_pnl + total_floating_pnl;
+   double today_pct = (balance > 0) ? (total_today / balance) * 100 : 0;
+   double week_pct = (balance > 0) ? (total_week / balance) * 100 : 0;
+   double month_pct = (balance > 0) ? (total_month / balance) * 100 : 0;
+   double today_closed_pct = (balance > 0) ? (hist_today_pnl / balance) * 100 : 0;
+   RenderRow2(row_left++, "  Today's Growth", DoubleToString(today_pct, 2) + "%  (" + DoubleToString(total_today, 2) + ")", 0,
+              (today_pct >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(row_left++, "  This Week Growth", DoubleToString(week_pct, 2) + "%  (" + DoubleToString(total_week, 2) + ")", 0,
+              (week_pct >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(row_left++, "  This Month Growth", DoubleToString(month_pct, 2) + "%  (" + DoubleToString(total_month, 2) + ")", 0,
+              (month_pct >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(row_left++, "  Today's Closed", IntegerToString(hist_today_trades) + " trades  │  " + DoubleToString(hist_today_pnl, 2) + " (" + DoubleToString(today_closed_pct, 2) + "%)", 0,
+              (hist_today_pnl >= 0) ? ClrProfit : ClrLoss);
+
+//--- ═══════════════════════════════════════════════════════════════
+//--- RIGHT COLUMN: PERFORMANCE METRICS + TIME STATS + MAGIC MATRIX + SYMBOL EXPOSURE + FOOTER
+//--- ═══════════════════════════════════════════════════════════════
+   // Position right column starting from row 0 (after header)
+   int start_row_right = 0; // header rows are 0,1,2
+   int right_offset = start_row_right;
+   
+   RenderRow2(right_offset++, "─── PERFORMANCE METRICS ──────────────────────────────", "", 1, ClrAccent, true);
+   RenderRow2(right_offset++, "  Total Trades", IntegerToString(hist_total_trades), 1, ClrText);
+   RenderRow2(right_offset++, "  Win Rate", BuildBar((int)MathRound(overall_wr / 10), 10) + " " + DoubleToString(overall_wr, 1) + "%", 1,
+              (overall_wr >= 50) ? ClrProfit : ClrLoss);
+   RenderRow2(right_offset++, "  Profit Factor", DoubleToString(profit_factor, 2), 1,
+              (profit_factor >= 2.0) ? ClrProfit : (profit_factor >= 1.0) ? ClrWarn : ClrLoss);
+   RenderRow2(right_offset++, "  Expectancy", DoubleToString(expectancy, 2) + " / trade", 1,
+              (expectancy >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(right_offset++, "  Avg Win / Avg Loss", DoubleToString(avg_win, 2) + " / " + DoubleToString(avg_loss, 2), 1, ClrText);
+   RenderRow2(right_offset++, "  Largest Win / Loss", DoubleToString(largest_win, 2) + " / " + DoubleToString(largest_loss, 2), 1, ClrText);
+   RenderRow2(right_offset++, "  Realized P&L", DoubleToString(hist_total_pnl, 2), 1,
+              (hist_total_pnl >= 0) ? ClrProfit : ClrLoss);
+
+   right_offset++;
+   RenderRow2(right_offset++, "─── TIME-BASED STATISTICS ────────────────────────────", "", 1, ClrAccent, true);
+   RenderRow2(right_offset++, "  Today", IntegerToString(hist_today_trades) + " trades  │  " + DoubleToString(hist_today_pnl, 2), 1,
+              (hist_today_pnl >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(right_offset++, "  This Week", IntegerToString(hist_week_trades) + " trades  │  " + DoubleToString(hist_week_pnl, 2), 1,
+              (hist_week_pnl >= 0) ? ClrProfit : ClrLoss);
+   RenderRow2(right_offset++, "  This Month", IntegerToString(hist_month_trades) + " trades  │  " + DoubleToString(hist_month_pnl, 2), 1,
+              (hist_month_pnl >= 0) ? ClrProfit : ClrLoss);
+
+   right_offset++;
+   RenderRow2(right_offset++, "─── TRADE HISTORY ────────────────────────────────────", "", 1, ClrAccent, true);
+   
+   int total_wins = hist_total_wins;
+   int total_losses = hist_total_trades - hist_total_wins;
+   double win_loss_ratio = (total_losses > 0) ? (double)total_wins / total_losses : 0;
+   double avg_trade_duration = 0; // Could be calculated from actual trade data if needed
+   
+   RenderRow2(right_offset++, "  Total Closed", IntegerToString(hist_total_trades), 1, ClrText);
+   RenderRow2(right_offset++, "  Wins / Losses", IntegerToString(total_wins) + " / " + IntegerToString(total_losses), 1, ClrText);
+   RenderRow2(right_offset++, "  Win/Loss Ratio", DoubleToString(win_loss_ratio, 2), 1,
+              (win_loss_ratio >= 1.0) ? ClrProfit : ClrLoss);
+   RenderRow2(right_offset++, "  Avg Win (P&L)", DoubleToString(avg_win, 2), 1, ClrProfit);
+   RenderRow2(right_offset++, "  Avg Loss (P&L)", DoubleToString(avg_loss, 2), 1, ClrLoss);
+   RenderRow2(right_offset++, "  Best / Worst Trade", DoubleToString(largest_win, 2) + " / " + DoubleToString(largest_loss, 2), 1, ClrText);
+
+   right_offset++;
+   RenderRow2(right_offset++, "─── ALGORITHMIC MATRIX BY MAGIC ID ───────────────────", "", 1, ClrAccent, true);
+   RenderRow2(right_offset++, "  MAGIC ID      OPN   FLOAT P&L    HIST P&L   WR%   P.F", "", 1, ClrBorder);
+   RenderRow2(right_offset++, "  ───────────────────────────────────────────────────────", "", 1, ClrDim);
+
+   for(int k = 0; k < total_magics; k++)
+     {
+      string magic_title = (magics[k].magic_id == 0) ? "Manual (0)" : IntegerToString(magics[k].magic_id);
+      double wr_k = (magics[k].hist_count > 0) ? ((double)magics[k].hist_wins / magics[k].hist_count) * 100 : 0;
+      double pf_k = (magics[k].hist_gross_loss > 0) ? magics[k].hist_gross_profit / magics[k].hist_gross_loss : 0;
+
+      string row_text = StringFormat("  %-12s %3d  %10.2f   %9.2f  %4.0f%% %5.2f",
+                                     magic_title,
+                                     magics[k].open_count,
+                                     magics[k].open_pnl,
+                                     magics[k].hist_pnl,
+                                     wr_k,
+                                     pf_k);
+
+      color row_clr = (magics[k].open_pnl + magics[k].hist_pnl >= 0) ? ClrProfit : ClrLoss;
+      RenderRow2(right_offset++, row_text, "", 1, row_clr);
+     }
+
+   if(total_symbols > 0)
+     {
+      right_offset++;
+      RenderRow2(right_offset++, "─── EXPOSURE BY SYMBOL ───────────────────────────────", "", 1, ClrWarn, true);
+      RenderRow2(right_offset++, "  SYMBOL        OPN   FLOAT P&L", "", 1, ClrBorder);
+      RenderRow2(right_offset++, "  ────────────────────────────────────────", "", 1, ClrDim);
+
+      for(int s = 0; s < total_symbols; s++)
+        {
+         string sym_text = StringFormat("  %-12s  %3d  %10.2f",
+                                        sym_data[s].symbol,
+                                        sym_data[s].open_count,
+                                        sym_data[s].open_pnl);
+         color sym_clr = (sym_data[s].open_pnl >= 0) ? ClrProfit : ClrLoss;
+         RenderRow2(right_offset++, sym_text, "", 1, sym_clr);
+        }
+     }
+
+   right_offset++;
+   RenderRow2(right_offset++, "╔════════════════════════════════════════════════════╗", "", 1, ClrBorder, true);
+   RenderRow2(right_offset++, "║  " + TimeToString(TimeCurrent(), TIME_SECONDS) + "  │ " +
+              Symbol() + " │  " + GetTFString() +
+              "  │  AI CyberTrader 2026  ║", "", 1, ClrDim, true);
+   RenderRow2(right_offset++, "╚════════════════════════════════════════════════════╝", "", 1, ClrBorder, true);
+
+   int max_rows = MathMax(row_left, right_offset);
+   row = max_rows;
+   MaxRenderedRows = row;
+
+   ChartRedraw(0);
+  }
+
+//+------------------------------------------------------------------+
+//| Get timeframe display string                                     |
+//+------------------------------------------------------------------+
+string GetTFString()
+  {
+   switch(Period())
+     {
+      case PERIOD_M1:  return("M1");
+      case PERIOD_M5:  return("M5");
+      case PERIOD_M15: return("M15");
+      case PERIOD_M30: return("M30");
+      case PERIOD_H1:  return("H1");
+      case PERIOD_H4:  return("H4");
+      case PERIOD_D1:  return("D1");
+      case PERIOD_W1:  return("W1");
+      case PERIOD_MN1: return("MN1");
+      default:         return("TF" + IntegerToString(Period()));
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Draw vertical divider between columns                             |
+//+------------------------------------------------------------------+
+void DrawDivider(string name, int x, int y, int h)
+  {
+   if(ObjectFind(0, name) < 0)
+     {
+      ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, name, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+      ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
+     }
+   ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+   ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+   ObjectSetInteger(0, name, OBJPROP_XSIZE, 3);
+   ObjectSetInteger(0, name, OBJPROP_YSIZE, h);
+   ObjectSetInteger(0, name, OBJPROP_BGCOLOR, C'0,255,204');
+   ObjectSetInteger(0, name, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+   ObjectSetInteger(0, name, OBJPROP_COLOR, C'0,255,204');
+   ObjectSetInteger(0, name, OBJPROP_WIDTH, 1);
+   ObjectSetInteger(0, name, OBJPROP_BACK, false);
+  }
+
+//+------------------------------------------------------------------+
+//| Draw semi-transparent panel background rectangle                 |
+//+------------------------------------------------------------------+
+void DrawPanelBG(string name, int x, int y, int w, int h)
+  {
+   if(ObjectFind(0, name) < 0)
+     {
+      ObjectCreate(0, name, OBJ_RECTANGLE_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, name, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+      ObjectSetInteger(0, name, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(0, name, OBJPROP_HIDDEN, true);
+     }
+   ObjectSetInteger(0, name, OBJPROP_XDISTANCE, x);
+   ObjectSetInteger(0, name, OBJPROP_YDISTANCE, y);
+   ObjectSetInteger(0, name, OBJPROP_XSIZE, w);
+   ObjectSetInteger(0, name, OBJPROP_YSIZE, h);
+   ObjectSetInteger(0, name, OBJPROP_BGCOLOR, ClrPanelBg);
+   ObjectSetInteger(0, name, OBJPROP_BORDER_TYPE, BORDER_FLAT);
+   ObjectSetInteger(0, name, OBJPROP_COLOR, ClrBorder);
+   ObjectSetInteger(0, name, OBJPROP_WIDTH, 1);
+   ObjectSetInteger(0, name, OBJPROP_BACK, false);
+  }
+
+//+------------------------------------------------------------------+
+//| Monospace row renderer                                           |
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//| Monospace row renderer with column support (col=0 left, col=1 right) |
+//+------------------------------------------------------------------+
+void RenderRow2(int row_idx, string primary_text, string standard_value = "", int col = 0, color text_color = clrNONE, bool uppercase_header = false)
+  {
+   if(text_color == clrNONE)
+      text_color = ClrText;
+
+   int coordinates_y = InpYOffset + 8 + (row_idx * RowHeight);
+   int x_offset = (col == 0) ? InpXOffset + 12 : InpXOffset + Col2XOffset;
+   int target_width = (col == 0) ? 38 : 40;
+   string object_id = PanelPrefix + "L_" + IntegerToString(row_idx) + "_" + IntegerToString(col);
+
+   if(ObjectFind(0, object_id) < 0)
+     {
+      ObjectCreate(0, object_id, OBJ_LABEL, 0, 0, 0);
+      ObjectSetInteger(0, object_id, OBJPROP_CORNER, CORNER_LEFT_UPPER);
+      ObjectSetInteger(0, object_id, OBJPROP_SELECTABLE, false);
+      ObjectSetInteger(0, object_id, OBJPROP_HIDDEN, true);
+     }
+
+   ObjectSetInteger(0, object_id, OBJPROP_XDISTANCE, x_offset);
+   ObjectSetInteger(0, object_id, OBJPROP_YDISTANCE, coordinates_y);
+   ObjectSetString(0, object_id, OBJPROP_FONT, "Lucida Console");
+   ObjectSetInteger(0, object_id, OBJPROP_FONTSIZE, uppercase_header ? InpFontSize + 1 : InpFontSize);
+   ObjectSetInteger(0, object_id, OBJPROP_COLOR, text_color);
+
+   if(standard_value != "")
+     {
+      int dots_needed = target_width - StringLen(primary_text) - StringLen(standard_value);
+      string separators = "";
+      for(int i = 0; i < MathMax(dots_needed, 1); i++)
+         separators += " ";
+      ObjectSetString(0, object_id, OBJPROP_TEXT, primary_text + separators + standard_value);
+     }
+   else
+     {
+      ObjectSetString(0, object_id, OBJPROP_TEXT, primary_text);
+     }
+  }
+
+//+------------------------------------------------------------------+
+//| Legacy RenderRow wrapper for compatibility                        |
+//+------------------------------------------------------------------+
+void RenderRow(int row_idx, string primary_text, string standard_value = "", color text_color = clrNONE, bool uppercase_header = false)
+  {
+   RenderRow2(row_idx, primary_text, standard_value, 0, text_color, uppercase_header);
+  }
+//+------------------------------------------------------------------+
+

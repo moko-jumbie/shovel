@@ -1,0 +1,242 @@
+//+------------------------------------------------------------------+
+//|                                             HMA_Crossover_Alerts |
+//|                                 Copyright 2026, AI Assistant    |
+//+------------------------------------------------------------------+
+#property strict 
+#property indicator_chart_window
+#property indicator_buffers 2
+#property indicator_color1  clrAqua
+#property indicator_color2  clrMagenta
+#property indicator_width1  2
+#property indicator_width2  2
+
+//---- Input Parameters
+input int      FastPeriod     = 9;       // Fast HMA Period
+input int      SlowPeriod     = 21;      // Slow HMA Period
+input bool     EnableAlert    = true;    // Popup Alerts
+input bool     EnablePush     = false;   // Mobile Push Notifications
+
+//---- Indicator Buffers
+double FastHMABuffer[];
+double SlowHMABuffer[];
+
+//---- Global variables for tracking alert state
+datetime lastAlertTime = 0;
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   IndicatorDigits(Digits);
+   
+   SetIndexBuffer(0, FastHMABuffer);
+   SetIndexStyle(0, DRAW_LINE);
+   SetIndexLabel(0, "Fast HMA (" + (string)FastPeriod + ")");
+   
+   SetIndexBuffer(1, SlowHMABuffer);
+   SetIndexStyle(1, DRAW_LINE);
+   SetIndexLabel(1, "Slow HMA (" + (string)SlowPeriod + ")");
+   
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//| Full-history pass (prev_calculated == 0) is O(rates_total): the  |
+//| HMA is rebuilt from running weighted sums instead of the old     |
+//| per-bar O(period*sqrt(period)) nested WMA loops, which made the  |
+//| initial attach noticeably slow. Live ticks still touch only      |
+//| bars 0..2 (fills from index 0 upward, stopping at `limit`).      |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total,
+                const int prev_calculated,
+                const datetime &time[],
+                const double &open[],
+                const double &high[],
+                const double &low[],
+                const double &close[],
+                const long &tick_volume[],
+                const long &volume[],
+                const int &spread[])
+{
+   // Safety check for sufficient data rows
+   if(rates_total <= SlowPeriod + 20) return(0);
+   
+   int limit = rates_total - prev_calculated;
+   
+   // If prev_calculated > 0, recalculate the last few bars to capture updates cleanly
+   if(prev_calculated > 0) limit++;
+   if(prev_calculated == 0) limit = rates_total - 1;
+
+   // CRASH PROTECTION: Limit historical calculation boundary to total history sizes
+   int maxSafeLookback = rates_total - (SlowPeriod + 20);
+   if(limit > maxSafeLookback) limit = maxSafeLookback;
+   
+   uint t0 = GetTickCount();
+
+   // 1. Calculate HMA values for historical data within safe zones
+   FillHMA(FastHMABuffer, FastPeriod, limit, rates_total);
+   FillHMA(SlowHMABuffer, SlowPeriod, limit, rates_total);
+
+   // 2. Execution Evaluation Framework (Check for Crossovers on the newly closed bar: Index 1)
+   if(time[1] != lastAlertTime)
+   {
+      // Verify buffers hold valid numeric sequence markers
+      if(FastHMABuffer[1] != EMPTY_VALUE && SlowHMABuffer[1] != EMPTY_VALUE &&
+         FastHMABuffer[2] != EMPTY_VALUE && SlowHMABuffer[2] != EMPTY_VALUE)
+      {
+         // Bullish Crossover: Fast crosses ABOVE Slow
+         if(FastHMABuffer[2] <= SlowHMABuffer[2] && FastHMABuffer[1] > SlowHMABuffer[1])
+         {
+            TriggerAlert("BULLISH BUY", Symbol(), PeriodToString(Period()));
+            lastAlertTime = time[1];
+         }
+         // Bearish Crossover: Fast crosses BELOW Slow
+         else if(FastHMABuffer[2] >= SlowHMABuffer[2] && FastHMABuffer[1] < SlowHMABuffer[1])
+         {
+            TriggerAlert("BEARISH SELL", Symbol(), PeriodToString(Period()));
+            lastAlertTime = time[1];
+         }
+      }
+   }
+
+   if(prev_calculated == 0 && limit > 0)
+      PrintFormat("HMA full history: %d bars filled in %d ms", limit + 1, (int)(GetTickCount() - t0));
+   
+   return(rates_total);
+}
+
+//+------------------------------------------------------------------+
+//| Structural Mathematical Framework for Hull Moving Average        |
+//| Fills one HMA buffer from index 0 (current bar) up to `limit`.   |
+//| Same math as the old per-bar version:                            |
+//|   raw[i]  = 2*WMA(i, period/2) - WMA(i, period)                  |
+//|   HMA[i]  = WMA(raw, sqrt(period))                               |
+//| Both layers use running weighted sums, so each bar is O(1) ~or~  |
+//| no per-bar temp buffer allocation is needed.                     |
+//+------------------------------------------------------------------+
+void FillHMA(double &outBuf[], const int period, const int limit, const int rates_total)
+{
+   if(period <= 1)
+   {
+      for(int i = limit; i >= 0; i--)
+         outBuf[i] = Close[i];
+      return;
+   }
+   
+   int halfPeriod = period / 2;
+   int sqrtPeriod = (int)MathRound(MathSqrt(period));
+   
+   // Bar index i (0 = current) has no HMA when its lookback window
+   // would run past the oldest loaded bar (old boundary check).
+   int last = (int)MathMin(limit, rates_total - period - sqrtPeriod - 1);
+   if(last < 0)
+   {
+      for(int i = limit; i >= 0; i--)
+         outBuf[i] = 0.0;
+      return;
+   }
+   if(last < limit)
+   {
+      // Truncated tail: behave like the old guard, which returned 0.0
+      for(int i = limit; i > last; i--)
+         outBuf[i] = 0.0;
+   }
+   
+   // --- Innermost layer: raw = 2*WMA(half) - WMA(full) --------------
+   int rawCount = last + sqrtPeriod;
+   double raw[];
+   ArrayResize(raw, rawCount);
+   
+   double sumFull = 0.0, winFull = 0.0;   // WMA(period) running state
+   double sumHalf = 0.0, winHalf = 0.0;   // WMA(halfPeriod) running state
+   
+   for(int i = 0; i < period; i++)
+   {
+      double price = Close[i];
+      sumFull += (double)(period - i) * price;
+      winFull += price;
+   }
+   for(int i = 0; i < halfPeriod; i++)
+   {
+      double price = Close[i];
+      sumHalf += (double)(halfPeriod - i) * price;
+      winHalf += price;
+   }
+   
+   double denomFull = (double)period * (period + 1) / 2.0;
+   double denomHalf = (double)halfPeriod * (halfPeriod + 1) / 2.0;
+   
+   raw[0] = 2.0 * (sumHalf / denomHalf) - (sumFull / denomFull);
+   
+   for(int i = 1; i < rawCount; i++)
+   {
+      winFull += Close[i + period - 1] - Close[i - 1];
+      sumFull += winFull - (double)period * Close[i - 1];
+      
+      winHalf += Close[i + halfPeriod - 1] - Close[i - 1];
+      sumHalf += winHalf - (double)halfPeriod * Close[i - 1];
+      
+      raw[i] = 2.0 * (sumHalf / denomHalf) - (sumFull / denomFull);
+   }
+   
+   // --- Outermost layer: WMA of raw over sqrt(period) --------------
+   double outerSum = 0.0, outerWin = 0.0;
+   
+   for(int i = 0; i < sqrtPeriod; i++)
+   {
+      outerSum += (double)(sqrtPeriod - i) * raw[i];
+      outerWin += raw[i];
+   }
+   
+   double denomOuter = (double)sqrtPeriod * (sqrtPeriod + 1) / 2.0;
+   outBuf[0] = outerSum / denomOuter;
+   
+   for(int i = 1; i <= last; i++)
+   {
+      outerWin += raw[i + sqrtPeriod - 1] - raw[i - 1];
+      outerSum += outerWin - (double)sqrtPeriod * raw[i - 1];
+      outBuf[i] = outerSum / denomOuter;
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Action Phase: Alert Router                                       |
+//+------------------------------------------------------------------+
+void TriggerAlert(string signalType, string asset, string timeframe)
+{
+   string message = "[HMA Cross] " + signalType + " signal detected on " + asset + " (" + timeframe + ")!";
+   
+   Print(message);
+   
+   if(EnableAlert)
+   {
+      Alert(message);
+   }
+   
+   if(EnablePush)
+   {
+      SendNotification(message);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Helper to parse period integers to standard text strings        |
+//+------------------------------------------------------------------+
+string PeriodToString(int timeFrame)
+{
+   switch(timeFrame)
+   {
+      case PERIOD_M1:  return("M1");
+      case PERIOD_M5:  return("M5");
+      case PERIOD_M15: return("M15");
+      case PERIOD_M30: return("M30");
+      case PERIOD_H1:  return("H1");
+      case PERIOD_H4:  return("H4");
+      case PERIOD_D1:  return("D1");
+      case PERIOD_W1:  return("W1");
+      case PERIOD_MN1: return("MN1");
+      default:         return("Unknown");
+   }
+}

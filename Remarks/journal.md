@@ -8,7 +8,7 @@ First set of optimizations were done with a ~6mo backtest. The first three days 
 
 # MyFXBook
 
-Forward-testing results will be published to https://www.myfxbook.com/portfolio/mt4-7008774/12211857
+Forward-testing results are and will be published to https://www.myfxbook.com/portfolio/mt4-7008774/12211857
 
 # Optimization
 
@@ -19,7 +19,7 @@ As mentioned, optimization seems to be profitable faster with recent short-term 
 Current method:
 - First I use a start set and optimize per session (eg. London):
     - Starting set is the defaults in the cBot. We just need to turn on the session we are optimizing, eg. London: true.
-- Find a reliable signal. I optimaze for fastPeriod & slowPeriod, searching in the range: Fast: 10-35, Slow: 13-90. I'm looking for good avarage trade, profit factor, and minimal equity and balance drawdowns. I'm also looking for clusters (eg. fast 20-25 with slow 56-64 all look good; or (14, 13), (16, 15), (21, 20)... pullback signals all look good) and eliminationg outliers.
+- Find a reliable signal. I optimaze for fastPeriod & slowPeriod **only**, searching in the range: Fast: 10-35, Slow: 13-90. I'm looking for good avarage trade, profit factor, and minimal equity and balance drawdowns. I'm also looking for clusters (eg. fast 20-25 with slow 56-64 all look good; or (14, 13), (16, 15), (21, 20)... pullback signals all look good) and eliminationg outliers.
 - Is the SMA filter helping or hindering? I optimize for SMA values from 50 all the way to 350, look for clusters of good results and choose a central point. Then test SMA filter true vs false.
 - Will ADX filtering help? I change ADX filtering to true and I test ADX filtering from ~10 to ~60 and compare with when ADX filtering was off. Is is eliminating bad trades?
 - SL & TP. Now that I have a reliable signal that survives 2xATR:2xATR risk/reward, I test to see if more breathing room is better. I do not like very narrow SL, so I don't go under 1.5x SL. Testing range: SL 1.5x-5x; TP 1.5x-15x.
@@ -28,6 +28,7 @@ Current method:
 ## Optimization Time frame
 
 - Last 5 trading days
+- M5 timeframe, tick data.
 - Optimize twice a week? 
     - On weekend (just because I have lots of time to do so).
     - After Wednesday (after Wednesday London [Mornings for me], I can test last 5 london sessions, after NY [~5pm for me] I can test last 5 NY sessions.) I have only tested Londons and NYs so far. I will try to add Asian sessions this week.
@@ -45,3 +46,22 @@ Current method:
     - JPY-NY	66666
     - XTI-NY	11111
     - XTI-London	33333
+
+# Example Run
+
+- See folder "Test Run".
+- On the first run, I noticed a good performance cluster with the slowHMA ~17-19. I settled on fast/slow (16,17).
+- Testing SMA, I noticed the 10 SMA looked like it filtered half the 200SMA (bad trades?). Testing the lower end more finely shows almost random results. 10, 11 did same as 19-24. I chose to continue with 23SMA (middle of the bigger cluster).
+- I turned ADX filter on and found a range 19-23 filtered out 2 trades, resulting in much higher PF and Avg Trades. I'll continue with ADX(21), middle of the cluster.
+- SL/TP runs show that the same 4 trades can survive a tighter stop (good signal?) and can run up to 7xATR. 1.5xATR is my limit for tightness. I will continue with (1.6x: 7x).
+- Testing the trailing, I discovered that early activation of a 1.5x trail skyrockets PF, but cut profits and average trade by almost half. I will still do a late activation with ample trail to possibly capture a near-miss. (Activation 6.3, Trail 2.1)
+- Final settings for forward testing: I change the magic to 22222, and half the risks (Max Daily Loss and Risk %)
+    - Signal (16, 17)
+    - SMA (23)
+    - ADX true, (21)
+    - SL/TP (1.6, 7)
+    - Trailing true, (6.3m 2.1)
+    - Magic (22222)
+    - London Session true
+    - Turn on HUD for forward testing
+    - Everything else default as in the cBot.

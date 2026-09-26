@@ -45,10 +45,11 @@ namespace cAlgo.Robots
     public partial class hmax_gold : Robot
     {
         // ── Circuit Breaker Matrix ────────────────────────────────────────
+        // ALL PARAMETERS DEFAULTED TO STARTING OPTIMIZATION SET.
         [Parameter("Use Daily Loss Limit", DefaultValue = true)]
         public bool UseDailyLossLimit { get; set; }
 
-        [Parameter("Max Daily Loss Percent", DefaultValue = 0.8, MinValue = 0.01)]
+        [Parameter("Max Daily Loss Percent", DefaultValue = 1.2, MinValue = 0.01)]
         public double MaxDailyLossPercent { get; set; }
 
         [Parameter("Use Consecutive Loss Guard", DefaultValue = true)]
@@ -67,7 +68,7 @@ namespace cAlgo.Robots
         public double AccountDailyClosePercent { get; set; }
 
         // ── Strategy Core Configuration ──────────────────────────────────
-        [Parameter("Label (EA magic 84721)", DefaultValue = "HMA Cross")]
+        [Parameter("Label (EA magic 84721)", DefaultValue = "11111")]
         public string Label { get; set; }
 
         [Parameter("Fast HMA Period", DefaultValue = 20, MinValue = 2)]
@@ -84,13 +85,13 @@ namespace cAlgo.Robots
         public int SmaPeriod { get; set; }
 
         // ── Advanced Guardrails ──────────────────────────────────────────
-        [Parameter("Use ADX Filter", DefaultValue = true)]
+        [Parameter("Use ADX Filter", DefaultValue = false)]
         public bool UseAdxFilter { get; set; }
 
-        [Parameter("ADX Threshold", DefaultValue = 28, MinValue = 1)]
+        [Parameter("ADX Threshold", DefaultValue = 24, MinValue = 1)]
         public int AdxThreshold { get; set; }
 
-        [Parameter("Use Trailing Stop", DefaultValue = true)]
+        [Parameter("Use Trailing Stop", DefaultValue = false)]
         public bool UseTrailingStop { get; set; }
 
         [Parameter("Trail Activation (ATR mult)", DefaultValue = 3.0, MinValue = 0.1)]
@@ -133,13 +134,13 @@ namespace cAlgo.Robots
         public int SpreadPipDivisor { get; set; }
 
         // ── Session Filters (broker time) ────────────────────────────────
-        [Parameter("Trade Sydney", DefaultValue = true)]
+        [Parameter("Trade Sydney", DefaultValue = false)]
         public bool TradeSydney { get; set; }
 
-        [Parameter("Trade London", DefaultValue = true)]
+        [Parameter("Trade London", DefaultValue = false)]
         public bool TradeLondon { get; set; }
 
-        [Parameter("Trade New York", DefaultValue = true)]
+        [Parameter("Trade New York", DefaultValue = false)]
         public bool TradeNY { get; set; }
 
         [Parameter("Trade Asia / Tokyo", DefaultValue = false)]
@@ -173,7 +174,7 @@ namespace cAlgo.Robots
         // Display only. Nothing in the trading path reads any of these, so
         // varying them in the optimiser cannot change a single trade — but see
         // Hud In Backtest for why the dashboard is off during optimisation.
-        [Parameter("Show Hud", DefaultValue = true, Group = "Holographic HUD")]
+        [Parameter("Show Hud", DefaultValue = false, Group = "Holographic HUD")]
         public bool ShowHud { get; set; }
 
         // The EA refreshed its dashboard from EventSetTimer. cTrader has the same

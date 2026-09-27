@@ -65,3 +65,22 @@ Current method:
     - London Session true
     - Turn on HUD for forward testing
     - Everything else default as in the cBot.
+
+# 2026-09-27
+
+I wondered if I would have spotted or even chosen my "optimal settings" for Sep 21-25 based on the previous week. First, I ran a backtest on "optimal settings" for Sep 14-18. It resulted in 3 successful trades, profit ~$1108. Profit factor showed "NaN" because there were no losers. "Optimal settings" can possibly do well 2 weeks straight. I decided to run a grid (exhaustive search) using my "optimal settings" and search signals only. Results were... interesting:
+- Signal (16,17) had an unusually high average trade - $366.28, compared to 88.53. It was an outlier I would have probably dismissed.
+- (16, 17) had NaN for NaN for fitness and - for PF. It does not even appear on the screen if I sort by either of these.
+- The cluster with highest profits do so wit ~19-25 trades. (16,17) did it with 3. Again, an outlier.
+Conclusions: I would in all likelyhood have NOT chosen (16,17) if given this set to choose from.
+Questions:
+- I don't choose signal last. Did the other settings (filters, stops) *make* (16,17) an outlier?
+- Given this set, which would I choose?
+- Would my choice be any good the following week?
+
+Testing the first question would take me a long time. I'll try the other 2. I would have chosen somewhere in the middle of the top cluster ~(11,13) or (12,15). Running a signal check for Sep 21-25 revealed:
+- (11,13) would have done fairly well: $444.54 profit; PF = 1.41; Average trade way down from previous week @ $27.78.
+- (12,15) did similar: $362.64 profit; PF = 1.45; Average trade = $32.97.
+- A new "outlier" signal formed: (18,19) [2 trades, $434 average trade] I should check it at the end of the week. Perhaps outliers are what I should choose after all?
+- A (new?) good cluster formed aroound (low-mid 30s, mid-high 20s).
+I'll let Kit run a similar signal search for September 7-11 and look for the week-to-week pattern.

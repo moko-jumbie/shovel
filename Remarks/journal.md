@@ -82,5 +82,6 @@ Testing the first question would take me a long time. I'll try the other 2. I wo
 - (11,13) would have done fairly well: $444.54 profit; PF = 1.41; Average trade way down from previous week @ $27.78.
 - (12,15) did similar: $362.64 profit; PF = 1.45; Average trade = $32.97.
 - A new "outlier" signal formed: (18,19) [2 trades, $434 average trade] I should check it at the end of the week. Perhaps outliers are what I should choose after all?
-- A (new?) good cluster formed aroound (low-mid 30s, mid-high 20s).
+- A (new?) good cluster formed aroound (low-mid 30s, mid-high 20s). These values *lost* money the previous week. Eg. (32, 27) ["passId": 387, "fitness": -41.70850583271343, "equity": 9977.239999999998].
+- The same stops can provide good results for multiple weeks. What seems to decay/alter results by a significant amount is the signal.
 I'll let Kit run a similar signal search for September 7-11 and look for the week-to-week pattern.

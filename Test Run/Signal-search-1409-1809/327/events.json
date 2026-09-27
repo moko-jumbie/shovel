@@ -1,0 +1,38 @@
+[
+  {
+    "serial": 0,
+    "orderId": null,
+    "positionId": 1,
+    "event": "Create Position",
+    "time": 1789476600061,
+    "volume": 14,
+    "quantity": 0.14,
+    "type": "Buy",
+    "entryPrice": 4290.63,
+    "tp": null,
+    "sl": 4283.58,
+    "closePrice": null,
+    "grossProfit": 0,
+    "pips": 0,
+    "balance": null,
+    "equity": 10000
+  },
+  {
+    "serial": 1,
+    "orderId": null,
+    "positionId": 1,
+    "event": "Stop Loss Hit",
+    "time": 1789482484848,
+    "volume": 14,
+    "quantity": 0.14,
+    "type": "Buy",
+    "entryPrice": 4290.63,
+    "tp": null,
+    "sl": 4283.58,
+    "closePrice": 4283.5,
+    "grossProfit": -99.82,
+    "pips": -71.3,
+    "balance": 9896.52,
+    "equity": 9896.52
+  }
+]

@@ -1,0 +1,9 @@
+14/09/2026 00:00:00.000 | Info | CBot instance [hmax_gold, XAUUSD, m5] started.
+14-09-2026 03:00:00.138 | Info | HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on XAUUSD Minute5 label='HMA Cross'
+15-09-2026 10:35:00.124 | Trade | Executing Market Order to Sell 16 XAUUSD (SL: 61, TP: 266.8)
+15-09-2026 10:35:00.124 | Trade | → Executing Market Order to Sell 16 XAUUSD (SL: 61, TP: 266.8) SUCCEEDED, Position PID1
+16-09-2026 11:20:00.006 | Trade | Executing Market Order to Buy 15 XAUUSD (SL: 65.3, TP: 285.8)
+16-09-2026 11:20:00.006 | Trade | → Executing Market Order to Buy 15 XAUUSD (SL: 65.3, TP: 285.8) SUCCEEDED, Position PID2
+17-09-2026 16:50:00.079 | Trade | Executing Market Order to Buy 8 XAUUSD (SL: 119.8, TP: 524.3)
+17-09-2026 16:50:00.079 | Trade | → Executing Market Order to Buy 8 XAUUSD (SL: 119.8, TP: 524.3) SUCCEEDED, Position PID3
+18/09/2026 20:58:56.439 | Info | CBot instance [hmax_gold, XAUUSD, m5] stopped.

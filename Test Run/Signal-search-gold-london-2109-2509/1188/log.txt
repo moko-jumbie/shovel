@@ -1,0 +1,133 @@
+21/09/2026 00:00:00.000 | Info | CBot instance [hmax_gold, XAUUSD, m5] started.
+21-09-2026 03:00:00.114 | Info | HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on XAUUSD Minute5 label='HMA Cross'
+21-09-2026 10:00:00.118 | Trade | Executing Market Order to Buy 15 XAUUSD (SL: 64.1, TP: 280.6)
+21-09-2026 10:00:00.118 | Trade | → Executing Market Order to Buy 15 XAUUSD (SL: 64.1, TP: 280.6) SUCCEEDED, Position PID1
+21-09-2026 11:05:00.110 | Trade | Executing Market Order to Sell 13 XAUUSD (SL: 73.2, TP: 320.1)
+21-09-2026 11:05:00.110 | Trade | → Executing Market Order to Sell 13 XAUUSD (SL: 73.2, TP: 320.1) SUCCEEDED, Position PID2
+22-09-2026 11:05:00.161 | Trade | Executing Market Order to Sell 10 XAUUSD (SL: 81.9, TP: 358.4)
+22-09-2026 11:05:00.161 | Trade | → Executing Market Order to Sell 10 XAUUSD (SL: 81.9, TP: 358.4) SUCCEEDED, Position PID3
+22-09-2026 11:55:00.039 | Trade | Executing Market Order to Buy 4 XAUUSD (SL: 104.3, TP: 456.4)
+22-09-2026 11:55:00.039 | Trade | → Executing Market Order to Buy 4 XAUUSD (SL: 104.3, TP: 456.4) SUCCEEDED, Position PID4
+23-09-2026 10:35:00.006 | Trade | Executing Market Order to Sell 9 XAUUSD (SL: 51.9, TP: 227.2)
+23-09-2026 10:35:00.006 | Trade | → Executing Market Order to Sell 9 XAUUSD (SL: 51.9, TP: 227.2) SUCCEEDED, Position PID5
+23-09-2026 14:38:57.555 | Trade | Modifying position PID5 (SL: 4305.46, TP: 4297.88)
+23-09-2026 14:38:57.555 | Trade | → Modifying position PID5 (SL: 4305.46, TP: 4297.88) SUCCEEDED, Position PID5
+23-09-2026 14:38:59.177 | Trade | Modifying position PID5 (SL: 4305.15, TP: 4297.88)
+23-09-2026 14:38:59.177 | Trade | → Modifying position PID5 (SL: 4305.15, TP: 4297.88) FAILED with error "InvalidStopLossTakeProfit"
+23-09-2026 15:25:00.053 | Trade | Executing Market Order to Buy 15 XAUUSD (SL: 63.9, TP: 279.7)
+23-09-2026 15:25:00.053 | Trade | → Executing Market Order to Buy 15 XAUUSD (SL: 63.9, TP: 279.7) SUCCEEDED, Position PID6
+23-09-2026 16:10:00.066 | Trade | Executing Market Order to Sell 13 XAUUSD (SL: 70.3, TP: 307.7)
+23-09-2026 16:10:00.066 | Trade | → Executing Market Order to Sell 13 XAUUSD (SL: 70.3, TP: 307.7) SUCCEEDED, Position PID7
+24-09-2026 13:40:00.023 | Trade | Executing Market Order to Buy 9 XAUUSD (SL: 88.4, TP: 386.9)
+24-09-2026 13:40:00.023 | Trade | → Executing Market Order to Buy 9 XAUUSD (SL: 88.4, TP: 386.9) SUCCEEDED, Position PID8
+24-09-2026 16:50:00.062 | Trade | Executing Market Order to Sell 10 XAUUSD (SL: 80.8, TP: 353.5)
+24-09-2026 16:50:00.062 | Trade | → Executing Market Order to Sell 10 XAUUSD (SL: 80.8, TP: 353.5) SUCCEEDED, Position PID9
+25-09-2026 11:30:00.037 | Trade | Executing Market Order to Buy 7 XAUUSD (SL: 66.2, TP: 289.7)
+25-09-2026 11:30:00.037 | Trade | → Executing Market Order to Buy 7 XAUUSD (SL: 66.2, TP: 289.7) SUCCEEDED, Position PID10
+25-09-2026 13:57:28.882 | Trade | Modifying position PID10 (SL: 4302.62, TP: 4313.35)
+25-09-2026 13:57:28.882 | Trade | → Modifying position PID10 (SL: 4302.62, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 13:57:29.263 | Trade | Modifying position PID10 (SL: 4302.64, TP: 4313.35)
+25-09-2026 13:57:29.263 | Trade | → Modifying position PID10 (SL: 4302.64, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:02.611 | Trade | Modifying position PID10 (SL: 4302.69, TP: 4313.35)
+25-09-2026 14:00:02.611 | Trade | → Modifying position PID10 (SL: 4302.69, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:05.620 | Trade | Modifying position PID10 (SL: 4302.69, TP: 4313.35)
+25-09-2026 14:00:05.620 | Trade | → Modifying position PID10 (SL: 4302.69, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:05.998 | Trade | Modifying position PID10 (SL: 4302.69, TP: 4313.35)
+25-09-2026 14:00:05.998 | Trade | → Modifying position PID10 (SL: 4302.69, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:47.167 | Trade | Modifying position PID10 (SL: 4302.72, TP: 4313.35)
+25-09-2026 14:00:47.167 | Trade | → Modifying position PID10 (SL: 4302.72, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:53.462 | Trade | Modifying position PID10 (SL: 4302.75, TP: 4313.35)
+25-09-2026 14:00:53.462 | Trade | → Modifying position PID10 (SL: 4302.75, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:53.705 | Trade | Modifying position PID10 (SL: 4302.77, TP: 4313.35)
+25-09-2026 14:00:53.705 | Trade | → Modifying position PID10 (SL: 4302.77, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:53.955 | Trade | Modifying position PID10 (SL: 4302.79, TP: 4313.35)
+25-09-2026 14:00:53.955 | Trade | → Modifying position PID10 (SL: 4302.79, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:54.334 | Trade | Modifying position PID10 (SL: 4302.81, TP: 4313.35)
+25-09-2026 14:00:54.334 | Trade | → Modifying position PID10 (SL: 4302.81, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:54.577 | Trade | Modifying position PID10 (SL: 4302.82, TP: 4313.35)
+25-09-2026 14:00:54.577 | Trade | → Modifying position PID10 (SL: 4302.82, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:54.832 | Trade | Modifying position PID10 (SL: 4302.83, TP: 4313.35)
+25-09-2026 14:00:54.832 | Trade | → Modifying position PID10 (SL: 4302.83, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:55.462 | Trade | Modifying position PID10 (SL: 4302.84, TP: 4313.35)
+25-09-2026 14:00:55.462 | Trade | → Modifying position PID10 (SL: 4302.84, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:58.104 | Trade | Modifying position PID10 (SL: 4302.88, TP: 4313.35)
+25-09-2026 14:00:58.104 | Trade | → Modifying position PID10 (SL: 4302.88, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:00:58.229 | Trade | Modifying position PID10 (SL: 4303.13, TP: 4313.35)
+25-09-2026 14:00:58.229 | Trade | → Modifying position PID10 (SL: 4303.13, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:37.813 | Trade | Modifying position PID10 (SL: 4303.19, TP: 4313.35)
+25-09-2026 14:06:37.813 | Trade | → Modifying position PID10 (SL: 4303.19, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:37.944 | Trade | Modifying position PID10 (SL: 4303.32, TP: 4313.35)
+25-09-2026 14:06:37.944 | Trade | → Modifying position PID10 (SL: 4303.32, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:40.827 | Trade | Modifying position PID10 (SL: 4303.33, TP: 4313.35)
+25-09-2026 14:06:40.827 | Trade | → Modifying position PID10 (SL: 4303.33, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:40.951 | Trade | Modifying position PID10 (SL: 4303.35, TP: 4313.35)
+25-09-2026 14:06:40.951 | Trade | → Modifying position PID10 (SL: 4303.35, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:41.326 | Trade | Modifying position PID10 (SL: 4303.37, TP: 4313.35)
+25-09-2026 14:06:41.326 | Trade | → Modifying position PID10 (SL: 4303.37, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:44.594 | Trade | Modifying position PID10 (SL: 4303.44, TP: 4313.35)
+25-09-2026 14:06:44.594 | Trade | → Modifying position PID10 (SL: 4303.44, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:44.727 | Trade | Modifying position PID10 (SL: 4303.45, TP: 4313.35)
+25-09-2026 14:06:44.727 | Trade | → Modifying position PID10 (SL: 4303.45, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:45.608 | Trade | Modifying position PID10 (SL: 4303.47, TP: 4313.35)
+25-09-2026 14:06:45.608 | Trade | → Modifying position PID10 (SL: 4303.47, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:47.979 | Trade | Modifying position PID10 (SL: 4303.52, TP: 4313.35)
+25-09-2026 14:06:47.979 | Trade | → Modifying position PID10 (SL: 4303.52, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:48.121 | Trade | Modifying position PID10 (SL: 4303.55, TP: 4313.35)
+25-09-2026 14:06:48.121 | Trade | → Modifying position PID10 (SL: 4303.55, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:48.365 | Trade | Modifying position PID10 (SL: 4303.56, TP: 4313.35)
+25-09-2026 14:06:48.365 | Trade | → Modifying position PID10 (SL: 4303.56, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:48.617 | Trade | Modifying position PID10 (SL: 4303.66, TP: 4313.35)
+25-09-2026 14:06:48.617 | Trade | → Modifying position PID10 (SL: 4303.66, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:48.875 | Trade | Modifying position PID10 (SL: 4303.68, TP: 4313.35)
+25-09-2026 14:06:48.875 | Trade | → Modifying position PID10 (SL: 4303.68, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:49.124 | Trade | Modifying position PID10 (SL: 4303.73, TP: 4313.35)
+25-09-2026 14:06:49.124 | Trade | → Modifying position PID10 (SL: 4303.73, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:52.632 | Trade | Modifying position PID10 (SL: 4303.73, TP: 4313.35)
+25-09-2026 14:06:52.632 | Trade | → Modifying position PID10 (SL: 4303.73, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:52.760 | Trade | Modifying position PID10 (SL: 4303.74, TP: 4313.35)
+25-09-2026 14:06:52.760 | Trade | → Modifying position PID10 (SL: 4303.74, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:58.167 | Trade | Modifying position PID10 (SL: 4303.75, TP: 4313.35)
+25-09-2026 14:06:58.167 | Trade | → Modifying position PID10 (SL: 4303.75, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:06:58.798 | Trade | Modifying position PID10 (SL: 4303.76, TP: 4313.35)
+25-09-2026 14:06:58.798 | Trade | → Modifying position PID10 (SL: 4303.76, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:01.803 | Trade | Modifying position PID10 (SL: 4303.97, TP: 4313.35)
+25-09-2026 14:07:01.803 | Trade | → Modifying position PID10 (SL: 4303.97, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:02.181 | Trade | Modifying position PID10 (SL: 4303.99, TP: 4313.35)
+25-09-2026 14:07:02.181 | Trade | → Modifying position PID10 (SL: 4303.99, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:02.305 | Trade | Modifying position PID10 (SL: 4304.03, TP: 4313.35)
+25-09-2026 14:07:02.305 | Trade | → Modifying position PID10 (SL: 4304.03, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:02.431 | Trade | Modifying position PID10 (SL: 4304.06, TP: 4313.35)
+25-09-2026 14:07:02.431 | Trade | → Modifying position PID10 (SL: 4304.06, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:06.829 | Trade | Modifying position PID10 (SL: 4304.14, TP: 4313.35)
+25-09-2026 14:07:06.829 | Trade | → Modifying position PID10 (SL: 4304.14, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:18.904 | Trade | Modifying position PID10 (SL: 4304.16, TP: 4313.35)
+25-09-2026 14:07:18.904 | Trade | → Modifying position PID10 (SL: 4304.16, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:19.015 | Trade | Modifying position PID10 (SL: 4304.25, TP: 4313.35)
+25-09-2026 14:07:19.015 | Trade | → Modifying position PID10 (SL: 4304.25, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:19.141 | Trade | Modifying position PID10 (SL: 4304.29, TP: 4313.35)
+25-09-2026 14:07:19.141 | Trade | → Modifying position PID10 (SL: 4304.29, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:19.273 | Trade | Modifying position PID10 (SL: 4304.31, TP: 4313.35)
+25-09-2026 14:07:19.273 | Trade | → Modifying position PID10 (SL: 4304.31, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:19.394 | Trade | Modifying position PID10 (SL: 4304.33, TP: 4313.35)
+25-09-2026 14:07:19.394 | Trade | → Modifying position PID10 (SL: 4304.33, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:19.648 | Trade | Modifying position PID10 (SL: 4304.34, TP: 4313.35)
+25-09-2026 14:07:19.648 | Trade | → Modifying position PID10 (SL: 4304.34, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:20.159 | Trade | Modifying position PID10 (SL: 4304.35, TP: 4313.35)
+25-09-2026 14:07:20.159 | Trade | → Modifying position PID10 (SL: 4304.35, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:20.270 | Trade | Modifying position PID10 (SL: 4304.36, TP: 4313.35)
+25-09-2026 14:07:20.270 | Trade | → Modifying position PID10 (SL: 4304.36, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:30.197 | Trade | Modifying position PID10 (SL: 4304.36, TP: 4313.35)
+25-09-2026 14:07:30.197 | Trade | → Modifying position PID10 (SL: 4304.36, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:30.329 | Trade | Modifying position PID10 (SL: 4304.38, TP: 4313.35)
+25-09-2026 14:07:30.329 | Trade | → Modifying position PID10 (SL: 4304.38, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:30.831 | Trade | Modifying position PID10 (SL: 4304.42, TP: 4313.35)
+25-09-2026 14:07:30.831 | Trade | → Modifying position PID10 (SL: 4304.42, TP: 4313.35) SUCCEEDED, Position PID10
+25-09-2026 14:07:31.084 | Trade | Modifying position PID10 (SL: 4304.53, TP: 4313.35)
+25-09-2026 14:07:31.084 | Trade | → Modifying position PID10 (SL: 4304.53, TP: 4313.35) FAILED with error "InvalidStopLossTakeProfit"
+25-09-2026 14:40:00.110 | Trade | Executing Market Order to Sell 13 XAUUSD (SL: 69.7, TP: 305.1)
+25-09-2026 14:40:00.110 | Trade | → Executing Market Order to Sell 13 XAUUSD (SL: 69.7, TP: 305.1) SUCCEEDED, Position PID11
+25-09-2026 18:00:00.076 | Trade | Executing Market Order to Buy 9 XAUUSD (SL: 98.5, TP: 431)
+25-09-2026 18:00:00.076 | Trade | → Executing Market Order to Buy 9 XAUUSD (SL: 98.5, TP: 431) SUCCEEDED, Position PID12
+25-09-2026 22:00:00.070 | Trade | Closing position PID12 (Volume: 9)
+25-09-2026 22:00:00.070 | Trade | → Closing position PID12 (Volume: 9) SUCCEEDED
+25/09/2026 20:58:59.940 | Info | CBot instance [hmax_gold, XAUUSD, m5] stopped.

@@ -1,0 +1,45 @@
+21/09/2026 00:00:00.000 | Info | CBot instance [hmax_gold, XAUUSD, m5] started.
+21-09-2026 03:00:00.114 | Info | HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on XAUUSD Minute5 label='HMA Cross'
+21-09-2026 10:50:00.198 | Trade | Executing Market Order to Sell 13 XAUUSD (SL: 73.6, TP: 322.1)
+21-09-2026 10:50:00.198 | Trade | → Executing Market Order to Sell 13 XAUUSD (SL: 73.6, TP: 322.1) SUCCEEDED, Position PID1
+21-09-2026 12:30:00.345 | Trade | Executing Market Order to Sell 14 XAUUSD (SL: 67.8, TP: 296.7)
+21-09-2026 12:30:00.345 | Trade | → Executing Market Order to Sell 14 XAUUSD (SL: 67.8, TP: 296.7) SUCCEEDED, Position PID2
+22-09-2026 10:45:00.097 | Trade | Executing Market Order to Sell 11 XAUUSD (SL: 78.4, TP: 342.8)
+22-09-2026 10:45:00.097 | Trade | → Executing Market Order to Sell 11 XAUUSD (SL: 78.4, TP: 342.8) SUCCEEDED, Position PID3
+23-09-2026 10:10:00.237 | Trade | Executing Market Order to Sell 9 XAUUSD (SL: 50, TP: 218.5)
+23-09-2026 10:10:00.237 | Trade | → Executing Market Order to Sell 9 XAUUSD (SL: 50, TP: 218.5) SUCCEEDED, Position PID4
+23-09-2026 14:22:08.344 | Trade | Modifying position PID4 (SL: 4314.72, TP: 4306.37)
+23-09-2026 14:22:08.344 | Trade | → Modifying position PID4 (SL: 4314.72, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:08.597 | Trade | Modifying position PID4 (SL: 4314.7, TP: 4306.37)
+23-09-2026 14:22:08.597 | Trade | → Modifying position PID4 (SL: 4314.7, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:14.384 | Trade | Modifying position PID4 (SL: 4314.66, TP: 4306.37)
+23-09-2026 14:22:14.384 | Trade | → Modifying position PID4 (SL: 4314.66, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:14.503 | Trade | Modifying position PID4 (SL: 4314.61, TP: 4306.37)
+23-09-2026 14:22:14.503 | Trade | → Modifying position PID4 (SL: 4314.61, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:14.625 | Trade | Modifying position PID4 (SL: 4314.59, TP: 4306.37)
+23-09-2026 14:22:14.625 | Trade | → Modifying position PID4 (SL: 4314.59, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:15.381 | Trade | Modifying position PID4 (SL: 4314.16, TP: 4306.37)
+23-09-2026 14:22:15.381 | Trade | → Modifying position PID4 (SL: 4314.16, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:15.508 | Trade | Modifying position PID4 (SL: 4313.95, TP: 4306.37)
+23-09-2026 14:22:15.508 | Trade | → Modifying position PID4 (SL: 4313.95, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:15.648 | Trade | Modifying position PID4 (SL: 4313.61, TP: 4306.37)
+23-09-2026 14:22:15.648 | Trade | → Modifying position PID4 (SL: 4313.61, TP: 4306.37) SUCCEEDED, Position PID4
+23-09-2026 14:22:15.884 | Trade | Modifying position PID4 (SL: 4312.66, TP: 4306.37)
+23-09-2026 14:22:15.884 | Trade | → Modifying position PID4 (SL: 4312.66, TP: 4306.37) FAILED with error "InvalidStopLossTakeProfit"
+23-09-2026 14:25:00.106 | Trade | Executing Market Order to Sell 18 XAUUSD (SL: 53.8, TP: 235.3)
+23-09-2026 14:25:00.106 | Trade | → Executing Market Order to Sell 18 XAUUSD (SL: 53.8, TP: 235.3) SUCCEEDED, Position PID5
+23-09-2026 15:50:00.134 | Trade | Executing Market Order to Sell 14 XAUUSD (SL: 65.9, TP: 288.5)
+23-09-2026 15:50:00.134 | Trade | → Executing Market Order to Sell 14 XAUUSD (SL: 65.9, TP: 288.5) SUCCEEDED, Position PID6
+23-09-2026 17:55:00.082 | Trade | Executing Market Order to Buy 8 XAUUSD (SL: 108.9, TP: 476.6)
+23-09-2026 17:55:00.082 | Trade | → Executing Market Order to Buy 8 XAUUSD (SL: 108.9, TP: 476.6) SUCCEEDED, Position PID7
+24-09-2026 13:45:00.182 | Trade | Executing Market Order to Buy 5 XAUUSD (SL: 87.7, TP: 383.5)
+24-09-2026 13:45:00.182 | Trade | → Executing Market Order to Buy 5 XAUUSD (SL: 87.7, TP: 383.5) SUCCEEDED, Position PID8
+25-09-2026 13:15:00.067 | Trade | Executing Market Order to Buy 6 XAUUSD (SL: 73, TP: 319.5)
+25-09-2026 13:15:00.067 | Trade | → Executing Market Order to Buy 6 XAUUSD (SL: 73, TP: 319.5) SUCCEEDED, Position PID9
+25-09-2026 14:35:00.018 | Trade | Executing Market Order to Sell 7 XAUUSD (SL: 66.7, TP: 291.8)
+25-09-2026 14:35:00.018 | Trade | → Executing Market Order to Sell 7 XAUUSD (SL: 66.7, TP: 291.8) SUCCEEDED, Position PID10
+25-09-2026 17:55:00.133 | Trade | Executing Market Order to Buy 9 XAUUSD (SL: 99.7, TP: 436.3)
+25-09-2026 17:55:00.133 | Trade | → Executing Market Order to Buy 9 XAUUSD (SL: 99.7, TP: 436.3) SUCCEEDED, Position PID11
+25-09-2026 22:00:00.070 | Trade | Closing position PID11 (Volume: 9)
+25-09-2026 22:00:00.070 | Trade | → Closing position PID11 (Volume: 9) SUCCEEDED
+25/09/2026 20:58:59.940 | Info | CBot instance [hmax_gold, XAUUSD, m5] stopped.

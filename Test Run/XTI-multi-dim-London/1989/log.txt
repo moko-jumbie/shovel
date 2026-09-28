@@ -1,0 +1,129 @@
+27/08/2026 00:00:00.000 | Info | CBot instance [hmax_gold, XTIUSD, m5] started.
+27-08-2026 03:00:00.271 | Info | HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on XTIUSD Minute5 label='HMA Cross'
+27-08-2026 16:55:00.135 | Trade | Executing Market Order to Buy 200 XTIUSD (SL: 50, TP: 70)
+27-08-2026 16:55:00.135 | Trade | → Executing Market Order to Buy 200 XTIUSD (SL: 50, TP: 70) SUCCEEDED, Position PID1
+27-08-2026 17:45:00.463 | Trade | Executing Market Order to Sell 190 XTIUSD (SL: 50.6, TP: 70.8)
+27-08-2026 17:45:00.463 | Trade | → Executing Market Order to Sell 190 XTIUSD (SL: 50.6, TP: 70.8) SUCCEEDED, Position PID2
+28-08-2026 13:40:03.693 | Trade | Executing Market Order to Buy 170 XTIUSD (SL: 49.5, TP: 69.3)
+28-08-2026 13:40:03.693 | Trade | → Executing Market Order to Buy 170 XTIUSD (SL: 49.5, TP: 69.3) SUCCEEDED, Position PID3
+28-08-2026 14:30:00.054 | Trade | Executing Market Order to Sell 180 XTIUSD (SL: 47.1, TP: 65.9)
+28-08-2026 14:30:00.054 | Trade | → Executing Market Order to Sell 180 XTIUSD (SL: 47.1, TP: 65.9) SUCCEEDED, Position PID4
+31-08-2026 11:25:00.817 | Trade | Executing Market Order to Buy 200 XTIUSD (SL: 48.5, TP: 67.9)
+31-08-2026 11:25:00.817 | Trade | → Executing Market Order to Buy 200 XTIUSD (SL: 48.5, TP: 67.9) SUCCEEDED, Position PID5
+01-09-2026 10:25:01.487 | Trade | Executing Market Order to Buy 210 XTIUSD (SL: 46.2, TP: 64.7)
+01-09-2026 10:25:01.487 | Trade | → Executing Market Order to Buy 210 XTIUSD (SL: 46.2, TP: 64.7) SUCCEEDED, Position PID6
+01-09-2026 15:45:00.020 | Trade | Executing Market Order to Buy 200 XTIUSD (SL: 50.3, TP: 70.4)
+01-09-2026 15:45:00.020 | Trade | → Executing Market Order to Buy 200 XTIUSD (SL: 50.3, TP: 70.4) SUCCEEDED, Position PID7
+01-09-2026 17:25:00.513 | Trade | Executing Market Order to Sell 180 XTIUSD (SL: 54.8, TP: 76.7)
+01-09-2026 17:25:00.513 | Trade | → Executing Market Order to Sell 180 XTIUSD (SL: 54.8, TP: 76.7) SUCCEEDED, Position PID8
+01-09-2026 18:40:00.184 | Trade | Executing Market Order to Buy 150 XTIUSD (SL: 56.3, TP: 78.9)
+01-09-2026 18:40:00.184 | Trade | → Executing Market Order to Buy 150 XTIUSD (SL: 56.3, TP: 78.9) SUCCEEDED, Position PID9
+02-09-2026 10:15:00.061 | Trade | Executing Market Order to Sell 200 XTIUSD (SL: 48.4, TP: 67.8)
+02-09-2026 10:15:00.061 | Trade | → Executing Market Order to Sell 200 XTIUSD (SL: 48.4, TP: 67.8) SUCCEEDED, Position PID10
+02-09-2026 14:10:00.149 | Trade | Executing Market Order to Sell 200 XTIUSD (SL: 47.7, TP: 66.8)
+02-09-2026 14:10:00.149 | Trade | → Executing Market Order to Sell 200 XTIUSD (SL: 47.7, TP: 66.8) SUCCEEDED, Position PID11
+03-09-2026 18:50:00.239 | Trade | Executing Market Order to Sell 120 XTIUSD (SL: 78.3, TP: 109.6)
+03-09-2026 18:50:00.239 | Trade | → Executing Market Order to Sell 120 XTIUSD (SL: 78.3, TP: 109.6) SUCCEEDED, Position PID12
+04-09-2026 10:47:05.827 | Trade | Modifying position PID12 (SL: 91.533, TP: 91.044)
+04-09-2026 10:47:05.827 | Trade | → Modifying position PID12 (SL: 91.533, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:06.212 | Trade | Modifying position PID12 (SL: 91.523, TP: 91.044)
+04-09-2026 10:47:06.212 | Trade | → Modifying position PID12 (SL: 91.523, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:06.850 | Trade | Modifying position PID12 (SL: 91.513, TP: 91.044)
+04-09-2026 10:47:06.850 | Trade | → Modifying position PID12 (SL: 91.513, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:10.278 | Trade | Modifying position PID12 (SL: 91.503, TP: 91.044)
+04-09-2026 10:47:10.278 | Trade | → Modifying position PID12 (SL: 91.503, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:11.805 | Trade | Modifying position PID12 (SL: 91.483, TP: 91.044)
+04-09-2026 10:47:11.805 | Trade | → Modifying position PID12 (SL: 91.483, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:15.103 | Trade | Modifying position PID12 (SL: 91.473, TP: 91.044)
+04-09-2026 10:47:15.103 | Trade | → Modifying position PID12 (SL: 91.473, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:15.228 | Trade | Modifying position PID12 (SL: 91.463, TP: 91.044)
+04-09-2026 10:47:15.228 | Trade | → Modifying position PID12 (SL: 91.463, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:34.926 | Trade | Modifying position PID12 (SL: 91.443, TP: 91.044)
+04-09-2026 10:47:34.926 | Trade | → Modifying position PID12 (SL: 91.443, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:38.736 | Trade | Modifying position PID12 (SL: 91.433, TP: 91.044)
+04-09-2026 10:47:38.736 | Trade | → Modifying position PID12 (SL: 91.433, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:47:48.934 | Trade | Modifying position PID12 (SL: 91.423, TP: 91.044)
+04-09-2026 10:47:48.934 | Trade | → Modifying position PID12 (SL: 91.423, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:48:09.840 | Trade | Modifying position PID12 (SL: 91.413, TP: 91.044)
+04-09-2026 10:48:09.840 | Trade | → Modifying position PID12 (SL: 91.413, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:48:11.474 | Trade | Modifying position PID12 (SL: 91.403, TP: 91.044)
+04-09-2026 10:48:11.474 | Trade | → Modifying position PID12 (SL: 91.403, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:48:15.950 | Trade | Modifying position PID12 (SL: 91.353, TP: 91.044)
+04-09-2026 10:48:15.950 | Trade | → Modifying position PID12 (SL: 91.353, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:48:23.672 | Trade | Modifying position PID12 (SL: 91.343, TP: 91.044)
+04-09-2026 10:48:23.672 | Trade | → Modifying position PID12 (SL: 91.343, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:48:25.369 | Trade | Modifying position PID12 (SL: 91.333, TP: 91.044)
+04-09-2026 10:48:25.369 | Trade | → Modifying position PID12 (SL: 91.333, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:48:27.216 | Trade | Modifying position PID12 (SL: 91.323, TP: 91.044)
+04-09-2026 10:48:27.216 | Trade | → Modifying position PID12 (SL: 91.323, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:51:18.902 | Trade | Modifying position PID12 (SL: 91.321, TP: 91.044)
+04-09-2026 10:51:18.902 | Trade | → Modifying position PID12 (SL: 91.321, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:51:19.409 | Trade | Modifying position PID12 (SL: 91.311, TP: 91.044)
+04-09-2026 10:51:19.409 | Trade | → Modifying position PID12 (SL: 91.311, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:51:19.659 | Trade | Modifying position PID12 (SL: 91.301, TP: 91.044)
+04-09-2026 10:51:19.659 | Trade | → Modifying position PID12 (SL: 91.301, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:51:52.994 | Trade | Modifying position PID12 (SL: 91.291, TP: 91.044)
+04-09-2026 10:51:52.994 | Trade | → Modifying position PID12 (SL: 91.291, TP: 91.044) SUCCEEDED, Position PID12
+04-09-2026 10:55:00.084 | Trade | Executing Market Order to Sell 210 XTIUSD (SL: 46.5, TP: 65)
+04-09-2026 10:55:00.084 | Trade | → Executing Market Order to Sell 210 XTIUSD (SL: 46.5, TP: 65) SUCCEEDED, Position PID13
+04-09-2026 17:45:00.190 | Trade | Executing Market Order to Buy 140 XTIUSD (SL: 68.7, TP: 96.2)
+04-09-2026 17:45:00.190 | Trade | → Executing Market Order to Buy 140 XTIUSD (SL: 68.7, TP: 96.2) SUCCEEDED, Position PID14
+07-09-2026 17:20:00.183 | Trade | Executing Market Order to Buy 230 XTIUSD (SL: 44.7, TP: 62.5)
+07-09-2026 17:20:00.183 | Trade | → Executing Market Order to Buy 230 XTIUSD (SL: 44.7, TP: 62.5) SUCCEEDED, Position PID15
+08-09-2026 15:40:00.168 | Trade | Executing Market Order to Sell 230 XTIUSD (SL: 45.4, TP: 63.5)
+08-09-2026 15:40:00.168 | Trade | → Executing Market Order to Sell 230 XTIUSD (SL: 45.4, TP: 63.5) SUCCEEDED, Position PID16
+08-09-2026 18:10:01.007 | Trade | Executing Market Order to Sell 190 XTIUSD (SL: 54.3, TP: 76.1)
+08-09-2026 18:10:01.007 | Trade | → Executing Market Order to Sell 190 XTIUSD (SL: 54.3, TP: 76.1) SUCCEEDED, Position PID17
+09-09-2026 11:50:00.041 | Trade | Executing Market Order to Buy 210 XTIUSD (SL: 49.4, TP: 69.1)
+09-09-2026 11:50:00.041 | Trade | → Executing Market Order to Buy 210 XTIUSD (SL: 49.4, TP: 69.1) SUCCEEDED, Position PID18
+09-09-2026 15:05:00.447 | Trade | Executing Market Order to Buy 190 XTIUSD (SL: 56.1, TP: 78.5)
+09-09-2026 15:05:00.447 | Trade | → Executing Market Order to Buy 190 XTIUSD (SL: 56.1, TP: 78.5) SUCCEEDED, Position PID19
+09-09-2026 17:50:00.166 | Trade | Executing Market Order to Buy 170 XTIUSD (SL: 64.9, TP: 90.9)
+09-09-2026 17:50:00.166 | Trade | → Executing Market Order to Buy 170 XTIUSD (SL: 64.9, TP: 90.9) SUCCEEDED, Position PID20
+10-09-2026 15:10:00.246 | Trade | Executing Market Order to Buy 160 XTIUSD (SL: 65.6, TP: 91.8)
+10-09-2026 15:10:00.246 | Trade | → Executing Market Order to Buy 160 XTIUSD (SL: 65.6, TP: 91.8) SUCCEEDED, Position PID21
+10-09-2026 18:35:00.943 | Trade | Executing Market Order to Buy 120 XTIUSD (SL: 86.2, TP: 120.7)
+10-09-2026 18:35:00.943 | Trade | → Executing Market Order to Buy 120 XTIUSD (SL: 86.2, TP: 120.7) SUCCEEDED, Position PID22
+11-09-2026 11:50:01.306 | Trade | Executing Market Order to Sell 120 XTIUSD (SL: 88.2, TP: 123.5)
+11-09-2026 11:50:01.306 | Trade | → Executing Market Order to Sell 120 XTIUSD (SL: 88.2, TP: 123.5) SUCCEEDED, Position PID23
+11-09-2026 16:40:00.092 | Trade | Executing Market Order to Sell 120 XTIUSD (SL: 89.6, TP: 125.5)
+11-09-2026 16:40:00.092 | Trade | → Executing Market Order to Sell 120 XTIUSD (SL: 89.6, TP: 125.5) SUCCEEDED, Position PID24
+11-09-2026 17:20:00.160 | Trade | Executing Market Order to Buy 120 XTIUSD (SL: 89.3, TP: 125)
+11-09-2026 17:20:00.160 | Trade | → Executing Market Order to Buy 120 XTIUSD (SL: 89.3, TP: 125) SUCCEEDED, Position PID25
+11-09-2026 22:00:00.894 | Trade | Closing position PID25 (Volume: 120)
+11-09-2026 22:00:00.894 | Trade | → Closing position PID25 (Volume: 120) SUCCEEDED
+14-09-2026 10:00:00.053 | Trade | Executing Market Order to Buy 180 XTIUSD (SL: 62.8, TP: 87.9)
+14-09-2026 10:00:00.053 | Trade | → Executing Market Order to Buy 180 XTIUSD (SL: 62.8, TP: 87.9) SUCCEEDED, Position PID26
+14-09-2026 12:45:00.108 | Trade | Executing Market Order to Sell 140 XTIUSD (SL: 80.4, TP: 112.5)
+14-09-2026 12:45:00.108 | Trade | → Executing Market Order to Sell 140 XTIUSD (SL: 80.4, TP: 112.5) SUCCEEDED, Position PID27
+15-09-2026 10:15:00.113 | Trade | Executing Market Order to Buy 220 XTIUSD (SL: 44.8, TP: 62.8)
+15-09-2026 10:15:00.113 | Trade | → Executing Market Order to Buy 220 XTIUSD (SL: 44.8, TP: 62.8) SUCCEEDED, Position PID28
+15-09-2026 16:05:00.432 | Trade | Executing Market Order to Sell 140 XTIUSD (SL: 79.1, TP: 110.7)
+15-09-2026 16:05:00.432 | Trade | → Executing Market Order to Sell 140 XTIUSD (SL: 79.1, TP: 110.7) SUCCEEDED, Position PID29
+15-09-2026 16:40:00.218 | Trade | Executing Market Order to Buy 110 XTIUSD (SL: 97.7, TP: 136.8)
+15-09-2026 16:40:00.218 | Trade | → Executing Market Order to Buy 110 XTIUSD (SL: 97.7, TP: 136.8) SUCCEEDED, Position PID30
+16-09-2026 11:15:00.157 | Trade | Executing Market Order to Buy 210 XTIUSD (SL: 52.3, TP: 73.2)
+16-09-2026 11:15:00.157 | Trade | → Executing Market Order to Buy 210 XTIUSD (SL: 52.3, TP: 73.2) SUCCEEDED, Position PID31
+16-09-2026 12:55:00.197 | Trade | Executing Market Order to Sell 180 XTIUSD (SL: 61.8, TP: 86.5)
+16-09-2026 12:55:00.197 | Trade | → Executing Market Order to Sell 180 XTIUSD (SL: 61.8, TP: 86.5) SUCCEEDED, Position PID32
+17-09-2026 13:10:00.164 | Trade | Executing Market Order to Sell 150 XTIUSD (SL: 74.6, TP: 104.4)
+17-09-2026 13:10:00.164 | Trade | → Executing Market Order to Sell 150 XTIUSD (SL: 74.6, TP: 104.4) SUCCEEDED, Position PID33
+18-09-2026 14:55:00.108 | Trade | Executing Market Order to Buy 190 XTIUSD (SL: 61, TP: 85.4)
+18-09-2026 14:55:00.108 | Trade | → Executing Market Order to Buy 190 XTIUSD (SL: 61, TP: 85.4) SUCCEEDED, Position PID34
+21-09-2026 12:05:00.103 | Trade | Executing Market Order to Buy 190 XTIUSD (SL: 57.9, TP: 81.1)
+21-09-2026 12:05:00.103 | Trade | → Executing Market Order to Buy 190 XTIUSD (SL: 57.9, TP: 81.1) SUCCEEDED, Position PID35
+21-09-2026 13:05:00.453 | Trade | Executing Market Order to Sell 170 XTIUSD (SL: 58.5, TP: 81.9)
+21-09-2026 13:05:00.453 | Trade | → Executing Market Order to Sell 170 XTIUSD (SL: 58.5, TP: 81.9) SUCCEEDED, Position PID36
+21-09-2026 16:25:00.123 | Trade | Executing Market Order to Sell 160 XTIUSD (SL: 69.6, TP: 97.4)
+21-09-2026 16:25:00.123 | Trade | → Executing Market Order to Sell 160 XTIUSD (SL: 69.6, TP: 97.4) SUCCEEDED, Position PID37
+23-09-2026 14:30:00.044 | Trade | Executing Market Order to Buy 200 XTIUSD (SL: 57.5, TP: 80.5)
+23-09-2026 14:30:00.044 | Trade | → Executing Market Order to Buy 200 XTIUSD (SL: 57.5, TP: 80.5) SUCCEEDED, Position PID38
+23-09-2026 18:50:00.073 | Trade | Executing Market Order to Buy 140 XTIUSD (SL: 82.8, TP: 115.9)
+23-09-2026 18:50:00.073 | Trade | → Executing Market Order to Buy 140 XTIUSD (SL: 82.8, TP: 115.9) SUCCEEDED, Position PID39
+24-09-2026 11:15:00.042 | Trade | Executing Market Order to Buy 180 XTIUSD (SL: 61.9, TP: 86.6)
+24-09-2026 11:15:00.042 | Trade | → Executing Market Order to Buy 180 XTIUSD (SL: 61.9, TP: 86.6) SUCCEEDED, Position PID40
+24-09-2026 14:55:00.374 | Trade | Executing Market Order to Buy 170 XTIUSD (SL: 59.2, TP: 82.9)
+24-09-2026 14:55:00.374 | Trade | → Executing Market Order to Buy 170 XTIUSD (SL: 59.2, TP: 82.9) SUCCEEDED, Position PID41
+25-09-2026 11:50:00.100 | Trade | Executing Market Order to Sell 200 XTIUSD (SL: 57.1, TP: 80)
+25-09-2026 11:50:00.100 | Trade | → Executing Market Order to Sell 200 XTIUSD (SL: 57.1, TP: 80) SUCCEEDED, Position PID42
+27/09/2026 23:59:57.457 | Info | CBot instance [hmax_gold, XTIUSD, m5] stopped.

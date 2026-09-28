@@ -1,0 +1,819 @@
+27/08/2026 00:00:00.000 | Info | CBot instance [hmax_gold, XTIUSD, m5] started.
+27-08-2026 03:00:00.271 | Info | HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on XTIUSD Minute5 label='HMA Cross'
+27-08-2026 16:45:00.139 | Trade | Executing Market Order to Buy 330 XTIUSD (SL: 30.2, TP: 231.9)
+27-08-2026 16:45:00.139 | Trade | → Executing Market Order to Buy 330 XTIUSD (SL: 30.2, TP: 231.9) SUCCEEDED, Position PID1
+27-08-2026 17:01:45.515 | Trade | Modifying position PID1 (SL: 83.446, TP: 85.717)
+27-08-2026 17:01:45.515 | Trade | → Modifying position PID1 (SL: 83.446, TP: 85.717) SUCCEEDED, Position PID1
+27-08-2026 17:01:45.641 | Trade | Modifying position PID1 (SL: 83.456, TP: 85.717)
+27-08-2026 17:01:45.641 | Trade | → Modifying position PID1 (SL: 83.456, TP: 85.717) SUCCEEDED, Position PID1
+27-08-2026 17:01:46.266 | Trade | Modifying position PID1 (SL: 83.466, TP: 85.717)
+27-08-2026 17:01:46.266 | Trade | → Modifying position PID1 (SL: 83.466, TP: 85.717) SUCCEEDED, Position PID1
+27-08-2026 17:01:59.023 | Trade | Modifying position PID1 (SL: 83.476, TP: 85.717)
+27-08-2026 17:01:59.023 | Trade | → Modifying position PID1 (SL: 83.476, TP: 85.717) SUCCEEDED, Position PID1
+27-08-2026 17:02:01.954 | Trade | Modifying position PID1 (SL: 83.496, TP: 85.717)
+27-08-2026 17:02:01.954 | Trade | → Modifying position PID1 (SL: 83.496, TP: 85.717) SUCCEEDED, Position PID1
+27-08-2026 17:02:04.961 | Trade | Modifying position PID1 (SL: 83.506, TP: 85.717)
+27-08-2026 17:02:04.961 | Trade | → Modifying position PID1 (SL: 83.506, TP: 85.717) SUCCEEDED, Position PID1
+28-08-2026 13:10:00.308 | Trade | Executing Market Order to Sell 310 XTIUSD (SL: 31.5, TP: 241.7)
+28-08-2026 13:10:00.308 | Trade | → Executing Market Order to Sell 310 XTIUSD (SL: 31.5, TP: 241.7) SUCCEEDED, Position PID2
+28-08-2026 14:30:00.054 | Trade | Executing Market Order to Sell 350 XTIUSD (SL: 28.3, TP: 216.7)
+28-08-2026 14:30:00.054 | Trade | → Executing Market Order to Sell 350 XTIUSD (SL: 28.3, TP: 216.7) SUCCEEDED, Position PID3
+28-08-2026 14:59:20.320 | Trade | Modifying position PID3 (SL: 83.686, TP: 81.556)
+28-08-2026 14:59:20.320 | Trade | → Modifying position PID3 (SL: 83.686, TP: 81.556) SUCCEEDED, Position PID3
+28-08-2026 14:59:30.142 | Trade | Modifying position PID3 (SL: 83.676, TP: 81.556)
+28-08-2026 14:59:30.142 | Trade | → Modifying position PID3 (SL: 83.676, TP: 81.556) SUCCEEDED, Position PID3
+28-08-2026 14:59:39.557 | Trade | Modifying position PID3 (SL: 83.666, TP: 81.556)
+28-08-2026 14:59:39.557 | Trade | → Modifying position PID3 (SL: 83.666, TP: 81.556) SUCCEEDED, Position PID3
+28-08-2026 14:59:43.236 | Trade | Modifying position PID3 (SL: 83.646, TP: 81.556)
+28-08-2026 14:59:43.236 | Trade | → Modifying position PID3 (SL: 83.646, TP: 81.556) SUCCEEDED, Position PID3
+31-08-2026 11:25:00.817 | Trade | Executing Market Order to Buy 340 XTIUSD (SL: 29.1, TP: 223)
+31-08-2026 11:25:00.817 | Trade | → Executing Market Order to Buy 340 XTIUSD (SL: 29.1, TP: 223) SUCCEEDED, Position PID4
+31-08-2026 11:33:56.556 | Trade | Modifying position PID4 (SL: 86.258, TP: 88.436)
+31-08-2026 11:33:56.556 | Trade | → Modifying position PID4 (SL: 86.258, TP: 88.436) SUCCEEDED, Position PID4
+31-08-2026 11:33:58.689 | Trade | Modifying position PID4 (SL: 86.268, TP: 88.436)
+31-08-2026 11:33:58.689 | Trade | → Modifying position PID4 (SL: 86.268, TP: 88.436) SUCCEEDED, Position PID4
+31-08-2026 11:34:02.688 | Trade | Modifying position PID4 (SL: 86.278, TP: 88.436)
+31-08-2026 11:34:02.688 | Trade | → Modifying position PID4 (SL: 86.278, TP: 88.436) SUCCEEDED, Position PID4
+01-09-2026 10:20:00.307 | Trade | Executing Market Order to Buy 350 XTIUSD (SL: 27.9, TP: 213.9)
+01-09-2026 10:20:00.307 | Trade | → Executing Market Order to Buy 350 XTIUSD (SL: 27.9, TP: 213.9) SUCCEEDED, Position PID5
+01-09-2026 11:05:48.496 | Trade | Modifying position PID5 (SL: 87.763, TP: 89.8)
+01-09-2026 11:05:48.496 | Trade | → Modifying position PID5 (SL: 87.763, TP: 89.8) SUCCEEDED, Position PID5
+01-09-2026 11:05:55.782 | Trade | Modifying position PID5 (SL: 87.803, TP: 89.8)
+01-09-2026 11:05:55.782 | Trade | → Modifying position PID5 (SL: 87.803, TP: 89.8) SUCCEEDED, Position PID5
+01-09-2026 11:05:56.910 | Trade | Modifying position PID5 (SL: 87.823, TP: 89.8)
+01-09-2026 11:05:56.910 | Trade | → Modifying position PID5 (SL: 87.823, TP: 89.8) SUCCEEDED, Position PID5
+01-09-2026 11:05:57.035 | Trade | Modifying position PID5 (SL: 87.873, TP: 89.8)
+01-09-2026 11:05:57.035 | Trade | → Modifying position PID5 (SL: 87.873, TP: 89.8) SUCCEEDED, Position PID5
+01-09-2026 11:05:58.545 | Trade | Modifying position PID5 (SL: 87.883, TP: 89.8)
+01-09-2026 11:05:58.545 | Trade | → Modifying position PID5 (SL: 87.883, TP: 89.8) SUCCEEDED, Position PID5
+01-09-2026 11:06:00.798 | Trade | Modifying position PID5 (SL: 87.893, TP: 89.8)
+01-09-2026 11:06:00.798 | Trade | → Modifying position PID5 (SL: 87.893, TP: 89.8) SUCCEEDED, Position PID5
+01-09-2026 15:40:00.524 | Trade | Executing Market Order to Buy 330 XTIUSD (SL: 30.4, TP: 232.9)
+01-09-2026 15:40:00.524 | Trade | → Executing Market Order to Buy 330 XTIUSD (SL: 30.4, TP: 232.9) SUCCEEDED, Position PID6
+01-09-2026 16:03:45.886 | Trade | Modifying position PID6 (SL: 88.733, TP: 91.02)
+01-09-2026 16:03:45.886 | Trade | → Modifying position PID6 (SL: 88.733, TP: 91.02) SUCCEEDED, Position PID6
+01-09-2026 16:03:49.075 | Trade | Modifying position PID6 (SL: 88.743, TP: 91.02)
+01-09-2026 16:03:49.075 | Trade | → Modifying position PID6 (SL: 88.743, TP: 91.02) SUCCEEDED, Position PID6
+01-09-2026 16:03:49.329 | Trade | Modifying position PID6 (SL: 88.753, TP: 91.02)
+01-09-2026 16:03:49.329 | Trade | → Modifying position PID6 (SL: 88.753, TP: 91.02) SUCCEEDED, Position PID6
+01-09-2026 16:03:49.586 | Trade | Modifying position PID6 (SL: 88.763, TP: 91.02)
+01-09-2026 16:03:49.586 | Trade | → Modifying position PID6 (SL: 88.763, TP: 91.02) SUCCEEDED, Position PID6
+01-09-2026 18:40:00.184 | Trade | Executing Market Order to Buy 290 XTIUSD (SL: 33.8, TP: 259.1)
+01-09-2026 18:40:00.184 | Trade | → Executing Market Order to Buy 290 XTIUSD (SL: 33.8, TP: 259.1) SUCCEEDED, Position PID7
+01-09-2026 18:57:00.161 | Trade | Modifying position PID7 (SL: 88.752, TP: 91.291)
+01-09-2026 18:57:00.161 | Trade | → Modifying position PID7 (SL: 88.752, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:00:26.813 | Trade | Modifying position PID7 (SL: 88.755, TP: 91.291)
+01-09-2026 19:00:26.813 | Trade | → Modifying position PID7 (SL: 88.755, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:00:28.145 | Trade | Modifying position PID7 (SL: 88.775, TP: 91.291)
+01-09-2026 19:00:28.145 | Trade | → Modifying position PID7 (SL: 88.775, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:01:32.708 | Trade | Modifying position PID7 (SL: 88.795, TP: 91.291)
+01-09-2026 19:01:32.708 | Trade | → Modifying position PID7 (SL: 88.795, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:01:32.821 | Trade | Modifying position PID7 (SL: 88.805, TP: 91.291)
+01-09-2026 19:01:32.821 | Trade | → Modifying position PID7 (SL: 88.805, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:02:39.312 | Trade | Modifying position PID7 (SL: 88.815, TP: 91.291)
+01-09-2026 19:02:39.312 | Trade | → Modifying position PID7 (SL: 88.815, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:08:56.274 | Trade | Modifying position PID7 (SL: 88.817, TP: 91.291)
+01-09-2026 19:08:56.274 | Trade | → Modifying position PID7 (SL: 88.817, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:09:05.436 | Trade | Modifying position PID7 (SL: 88.827, TP: 91.291)
+01-09-2026 19:09:05.436 | Trade | → Modifying position PID7 (SL: 88.827, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:09:53.859 | Trade | Modifying position PID7 (SL: 88.837, TP: 91.291)
+01-09-2026 19:09:53.859 | Trade | → Modifying position PID7 (SL: 88.837, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:09:55.117 | Trade | Modifying position PID7 (SL: 88.857, TP: 91.291)
+01-09-2026 19:09:55.117 | Trade | → Modifying position PID7 (SL: 88.857, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:10:00.734 | Trade | Modifying position PID7 (SL: 88.877, TP: 91.291)
+01-09-2026 19:10:00.734 | Trade | → Modifying position PID7 (SL: 88.877, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:10:01.737 | Trade | Modifying position PID7 (SL: 88.887, TP: 91.291)
+01-09-2026 19:10:01.737 | Trade | → Modifying position PID7 (SL: 88.887, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:10:01.888 | Trade | Modifying position PID7 (SL: 89.037, TP: 91.291)
+01-09-2026 19:10:01.888 | Trade | → Modifying position PID7 (SL: 89.037, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:10:11.224 | Trade | Modifying position PID7 (SL: 89.067, TP: 91.291)
+01-09-2026 19:10:11.224 | Trade | → Modifying position PID7 (SL: 89.067, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:10:17.011 | Trade | Modifying position PID7 (SL: 89.077, TP: 91.291)
+01-09-2026 19:10:17.011 | Trade | → Modifying position PID7 (SL: 89.077, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:10:17.387 | Trade | Modifying position PID7 (SL: 89.087, TP: 91.291)
+01-09-2026 19:10:17.387 | Trade | → Modifying position PID7 (SL: 89.087, TP: 91.291) SUCCEEDED, Position PID7
+01-09-2026 19:10:17.771 | Trade | Modifying position PID7 (SL: 89.097, TP: 91.291)
+01-09-2026 19:10:17.771 | Trade | → Modifying position PID7 (SL: 89.097, TP: 91.291) SUCCEEDED, Position PID7
+02-09-2026 10:15:00.061 | Trade | Executing Market Order to Sell 350 XTIUSD (SL: 29.1, TP: 222.8)
+02-09-2026 10:15:00.061 | Trade | → Executing Market Order to Sell 350 XTIUSD (SL: 29.1, TP: 222.8) SUCCEEDED, Position PID8
+02-09-2026 10:41:03.555 | Trade | Modifying position PID8 (SL: 90.678, TP: 88.497)
+02-09-2026 10:41:03.555 | Trade | → Modifying position PID8 (SL: 90.678, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:03.681 | Trade | Modifying position PID8 (SL: 90.668, TP: 88.497)
+02-09-2026 10:41:03.681 | Trade | → Modifying position PID8 (SL: 90.668, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:03.806 | Trade | Modifying position PID8 (SL: 90.658, TP: 88.497)
+02-09-2026 10:41:03.806 | Trade | → Modifying position PID8 (SL: 90.658, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:13.107 | Trade | Modifying position PID8 (SL: 90.648, TP: 88.497)
+02-09-2026 10:41:13.107 | Trade | → Modifying position PID8 (SL: 90.648, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:13.735 | Trade | Modifying position PID8 (SL: 90.638, TP: 88.497)
+02-09-2026 10:41:13.735 | Trade | → Modifying position PID8 (SL: 90.638, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:15.369 | Trade | Modifying position PID8 (SL: 90.628, TP: 88.497)
+02-09-2026 10:41:15.369 | Trade | → Modifying position PID8 (SL: 90.628, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:18.188 | Trade | Modifying position PID8 (SL: 90.618, TP: 88.497)
+02-09-2026 10:41:18.188 | Trade | → Modifying position PID8 (SL: 90.618, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:18.312 | Trade | Modifying position PID8 (SL: 90.608, TP: 88.497)
+02-09-2026 10:41:18.312 | Trade | → Modifying position PID8 (SL: 90.608, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:41:19.451 | Trade | Modifying position PID8 (SL: 90.598, TP: 88.497)
+02-09-2026 10:41:19.451 | Trade | → Modifying position PID8 (SL: 90.598, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:42:05.959 | Trade | Modifying position PID8 (SL: 90.588, TP: 88.497)
+02-09-2026 10:42:05.959 | Trade | → Modifying position PID8 (SL: 90.588, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 10:43:08.957 | Trade | Modifying position PID8 (SL: 90.568, TP: 88.497)
+02-09-2026 10:43:08.957 | Trade | → Modifying position PID8 (SL: 90.568, TP: 88.497) SUCCEEDED, Position PID8
+02-09-2026 14:00:00.169 | Trade | Executing Market Order to Sell 370 XTIUSD (SL: 27.5, TP: 210.9)
+02-09-2026 14:00:00.169 | Trade | → Executing Market Order to Sell 370 XTIUSD (SL: 27.5, TP: 210.9) SUCCEEDED, Position PID9
+02-09-2026 14:09:56.770 | Trade | Modifying position PID9 (SL: 90.704, TP: 88.636)
+02-09-2026 14:09:56.770 | Trade | → Modifying position PID9 (SL: 90.704, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:10:45.029 | Trade | Modifying position PID9 (SL: 90.699, TP: 88.636)
+02-09-2026 14:10:45.029 | Trade | → Modifying position PID9 (SL: 90.699, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:10:45.657 | Trade | Modifying position PID9 (SL: 90.679, TP: 88.636)
+02-09-2026 14:10:45.657 | Trade | → Modifying position PID9 (SL: 90.679, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:10:56.502 | Trade | Modifying position PID9 (SL: 90.659, TP: 88.636)
+02-09-2026 14:10:56.502 | Trade | → Modifying position PID9 (SL: 90.659, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:11:19.251 | Trade | Modifying position PID9 (SL: 90.649, TP: 88.636)
+02-09-2026 14:11:19.251 | Trade | → Modifying position PID9 (SL: 90.649, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:11:33.023 | Trade | Modifying position PID9 (SL: 90.639, TP: 88.636)
+02-09-2026 14:11:33.023 | Trade | → Modifying position PID9 (SL: 90.639, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:12:50.910 | Trade | Modifying position PID9 (SL: 90.629, TP: 88.636)
+02-09-2026 14:12:50.910 | Trade | → Modifying position PID9 (SL: 90.629, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:12:51.786 | Trade | Modifying position PID9 (SL: 90.619, TP: 88.636)
+02-09-2026 14:12:51.786 | Trade | → Modifying position PID9 (SL: 90.619, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:12:54.608 | Trade | Modifying position PID9 (SL: 90.599, TP: 88.636)
+02-09-2026 14:12:54.608 | Trade | → Modifying position PID9 (SL: 90.599, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:12:54.984 | Trade | Modifying position PID9 (SL: 90.589, TP: 88.636)
+02-09-2026 14:12:54.984 | Trade | → Modifying position PID9 (SL: 90.589, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:12:58.815 | Trade | Modifying position PID9 (SL: 90.569, TP: 88.636)
+02-09-2026 14:12:58.815 | Trade | → Modifying position PID9 (SL: 90.569, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:13:08.881 | Trade | Modifying position PID9 (SL: 90.559, TP: 88.636)
+02-09-2026 14:13:08.881 | Trade | → Modifying position PID9 (SL: 90.559, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:13:10.514 | Trade | Modifying position PID9 (SL: 90.549, TP: 88.636)
+02-09-2026 14:13:10.514 | Trade | → Modifying position PID9 (SL: 90.549, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:13:22.736 | Trade | Modifying position PID9 (SL: 90.539, TP: 88.636)
+02-09-2026 14:13:22.736 | Trade | → Modifying position PID9 (SL: 90.539, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:17.600 | Trade | Modifying position PID9 (SL: 90.529, TP: 88.636)
+02-09-2026 14:14:17.600 | Trade | → Modifying position PID9 (SL: 90.529, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:17.724 | Trade | Modifying position PID9 (SL: 90.519, TP: 88.636)
+02-09-2026 14:14:17.724 | Trade | → Modifying position PID9 (SL: 90.519, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:21.010 | Trade | Modifying position PID9 (SL: 90.509, TP: 88.636)
+02-09-2026 14:14:21.010 | Trade | → Modifying position PID9 (SL: 90.509, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:22.256 | Trade | Modifying position PID9 (SL: 90.499, TP: 88.636)
+02-09-2026 14:14:22.256 | Trade | → Modifying position PID9 (SL: 90.499, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:23.651 | Trade | Modifying position PID9 (SL: 90.479, TP: 88.636)
+02-09-2026 14:14:23.651 | Trade | → Modifying position PID9 (SL: 90.479, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:23.903 | Trade | Modifying position PID9 (SL: 90.439, TP: 88.636)
+02-09-2026 14:14:23.903 | Trade | → Modifying position PID9 (SL: 90.439, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:24.026 | Trade | Modifying position PID9 (SL: 90.399, TP: 88.636)
+02-09-2026 14:14:24.026 | Trade | → Modifying position PID9 (SL: 90.399, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:36.213 | Trade | Modifying position PID9 (SL: 90.389, TP: 88.636)
+02-09-2026 14:14:36.213 | Trade | → Modifying position PID9 (SL: 90.389, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:36.585 | Trade | Modifying position PID9 (SL: 90.359, TP: 88.636)
+02-09-2026 14:14:36.585 | Trade | → Modifying position PID9 (SL: 90.359, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:36.962 | Trade | Modifying position PID9 (SL: 90.349, TP: 88.636)
+02-09-2026 14:14:36.962 | Trade | → Modifying position PID9 (SL: 90.349, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:37.092 | Trade | Modifying position PID9 (SL: 90.339, TP: 88.636)
+02-09-2026 14:14:37.092 | Trade | → Modifying position PID9 (SL: 90.339, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:38.092 | Trade | Modifying position PID9 (SL: 90.329, TP: 88.636)
+02-09-2026 14:14:38.092 | Trade | → Modifying position PID9 (SL: 90.329, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:38.219 | Trade | Modifying position PID9 (SL: 90.319, TP: 88.636)
+02-09-2026 14:14:38.219 | Trade | → Modifying position PID9 (SL: 90.319, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:38.467 | Trade | Modifying position PID9 (SL: 90.259, TP: 88.636)
+02-09-2026 14:14:38.467 | Trade | → Modifying position PID9 (SL: 90.259, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:41.730 | Trade | Modifying position PID9 (SL: 90.239, TP: 88.636)
+02-09-2026 14:14:41.730 | Trade | → Modifying position PID9 (SL: 90.239, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:43.728 | Trade | Modifying position PID9 (SL: 90.209, TP: 88.636)
+02-09-2026 14:14:43.728 | Trade | → Modifying position PID9 (SL: 90.209, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:44.731 | Trade | Modifying position PID9 (SL: 90.199, TP: 88.636)
+02-09-2026 14:14:44.731 | Trade | → Modifying position PID9 (SL: 90.199, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:44.983 | Trade | Modifying position PID9 (SL: 90.189, TP: 88.636)
+02-09-2026 14:14:44.983 | Trade | → Modifying position PID9 (SL: 90.189, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:45.233 | Trade | Modifying position PID9 (SL: 90.179, TP: 88.636)
+02-09-2026 14:14:45.233 | Trade | → Modifying position PID9 (SL: 90.179, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:45.360 | Trade | Modifying position PID9 (SL: 90.159, TP: 88.636)
+02-09-2026 14:14:45.360 | Trade | → Modifying position PID9 (SL: 90.159, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:45.484 | Trade | Modifying position PID9 (SL: 90.149, TP: 88.636)
+02-09-2026 14:14:45.484 | Trade | → Modifying position PID9 (SL: 90.149, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:48.614 | Trade | Modifying position PID9 (SL: 90.139, TP: 88.636)
+02-09-2026 14:14:48.614 | Trade | → Modifying position PID9 (SL: 90.139, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:49.868 | Trade | Modifying position PID9 (SL: 90.099, TP: 88.636)
+02-09-2026 14:14:49.868 | Trade | → Modifying position PID9 (SL: 90.099, TP: 88.636) SUCCEEDED, Position PID9
+02-09-2026 14:14:51.998 | Trade | Modifying position PID9 (SL: 90.089, TP: 88.636)
+02-09-2026 14:14:51.998 | Trade | → Modifying position PID9 (SL: 90.089, TP: 88.636) SUCCEEDED, Position PID9
+03-09-2026 17:20:00.289 | Trade | Executing Market Order to Buy 230 XTIUSD (SL: 44.3, TP: 339.9)
+03-09-2026 17:20:00.289 | Trade | → Executing Market Order to Buy 230 XTIUSD (SL: 44.3, TP: 339.9) SUCCEEDED, Position PID10
+03-09-2026 17:34:48.682 | Trade | Modifying position PID10 (SL: 92.665, TP: 95.999)
+03-09-2026 17:34:48.682 | Trade | → Modifying position PID10 (SL: 92.665, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:35:00.040 | Trade | Modifying position PID10 (SL: 92.667, TP: 95.999)
+03-09-2026 17:35:00.040 | Trade | → Modifying position PID10 (SL: 92.667, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:35:03.509 | Trade | Modifying position PID10 (SL: 92.687, TP: 95.999)
+03-09-2026 17:35:03.509 | Trade | → Modifying position PID10 (SL: 92.687, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:35:18.967 | Trade | Modifying position PID10 (SL: 92.697, TP: 95.999)
+03-09-2026 17:35:18.967 | Trade | → Modifying position PID10 (SL: 92.697, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:36:10.416 | Trade | Modifying position PID10 (SL: 92.707, TP: 95.999)
+03-09-2026 17:36:10.416 | Trade | → Modifying position PID10 (SL: 92.707, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:36:10.543 | Trade | Modifying position PID10 (SL: 92.717, TP: 95.999)
+03-09-2026 17:36:10.543 | Trade | → Modifying position PID10 (SL: 92.717, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:36:10.667 | Trade | Modifying position PID10 (SL: 92.727, TP: 95.999)
+03-09-2026 17:36:10.667 | Trade | → Modifying position PID10 (SL: 92.727, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:36:52.179 | Trade | Modifying position PID10 (SL: 92.737, TP: 95.999)
+03-09-2026 17:36:52.179 | Trade | → Modifying position PID10 (SL: 92.737, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:37:00.274 | Trade | Modifying position PID10 (SL: 92.747, TP: 95.999)
+03-09-2026 17:37:00.274 | Trade | → Modifying position PID10 (SL: 92.747, TP: 95.999) SUCCEEDED, Position PID10
+03-09-2026 17:37:05.915 | Trade | Modifying position PID10 (SL: 92.757, TP: 95.999)
+03-09-2026 17:37:05.915 | Trade | → Modifying position PID10 (SL: 92.757, TP: 95.999) SUCCEEDED, Position PID10
+04-09-2026 10:55:00.084 | Trade | Executing Market Order to Sell 370 XTIUSD (SL: 27.9, TP: 213.7)
+04-09-2026 10:55:00.084 | Trade | → Executing Market Order to Sell 370 XTIUSD (SL: 27.9, TP: 213.7) SUCCEEDED, Position PID11
+04-09-2026 11:12:31.370 | Trade | Modifying position PID11 (SL: 91.213, TP: 89.127)
+04-09-2026 11:12:31.370 | Trade | → Modifying position PID11 (SL: 91.213, TP: 89.127) SUCCEEDED, Position PID11
+04-09-2026 11:12:31.495 | Trade | Modifying position PID11 (SL: 91.203, TP: 89.127)
+04-09-2026 11:12:31.495 | Trade | → Modifying position PID11 (SL: 91.203, TP: 89.127) SUCCEEDED, Position PID11
+04-09-2026 11:12:31.618 | Trade | Modifying position PID11 (SL: 91.193, TP: 89.127)
+04-09-2026 11:12:31.618 | Trade | → Modifying position PID11 (SL: 91.193, TP: 89.127) SUCCEEDED, Position PID11
+04-09-2026 11:13:16.573 | Trade | Modifying position PID11 (SL: 91.183, TP: 89.127)
+04-09-2026 11:13:16.573 | Trade | → Modifying position PID11 (SL: 91.183, TP: 89.127) SUCCEEDED, Position PID11
+04-09-2026 14:00:00.121 | Trade | Executing Market Order to Sell 350 XTIUSD (SL: 29.6, TP: 227.1)
+04-09-2026 14:00:00.121 | Trade | → Executing Market Order to Sell 350 XTIUSD (SL: 29.6, TP: 227.1) SUCCEEDED, Position PID12
+04-09-2026 15:35:00.149 | Trade | Executing Market Order to Sell 370 XTIUSD (SL: 28, TP: 214.8)
+04-09-2026 15:35:00.149 | Trade | → Executing Market Order to Sell 370 XTIUSD (SL: 28, TP: 214.8) SUCCEEDED, Position PID13
+04-09-2026 15:51:43.765 | Trade | Modifying position PID13 (SL: 90.757, TP: 88.656)
+04-09-2026 15:51:43.765 | Trade | → Modifying position PID13 (SL: 90.757, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:00.926 | Trade | Modifying position PID13 (SL: 90.727, TP: 88.656)
+04-09-2026 15:53:00.926 | Trade | → Modifying position PID13 (SL: 90.727, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:01.046 | Trade | Modifying position PID13 (SL: 90.717, TP: 88.656)
+04-09-2026 15:53:01.046 | Trade | → Modifying position PID13 (SL: 90.717, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:14.974 | Trade | Modifying position PID13 (SL: 90.707, TP: 88.656)
+04-09-2026 15:53:14.974 | Trade | → Modifying position PID13 (SL: 90.707, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:27.473 | Trade | Modifying position PID13 (SL: 90.687, TP: 88.656)
+04-09-2026 15:53:27.473 | Trade | → Modifying position PID13 (SL: 90.687, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:27.594 | Trade | Modifying position PID13 (SL: 90.647, TP: 88.656)
+04-09-2026 15:53:27.594 | Trade | → Modifying position PID13 (SL: 90.647, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:34.766 | Trade | Modifying position PID13 (SL: 90.637, TP: 88.656)
+04-09-2026 15:53:34.766 | Trade | → Modifying position PID13 (SL: 90.637, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:34.891 | Trade | Modifying position PID13 (SL: 90.627, TP: 88.656)
+04-09-2026 15:53:34.891 | Trade | → Modifying position PID13 (SL: 90.627, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:40.843 | Trade | Modifying position PID13 (SL: 90.617, TP: 88.656)
+04-09-2026 15:53:40.843 | Trade | → Modifying position PID13 (SL: 90.617, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:49.147 | Trade | Modifying position PID13 (SL: 90.607, TP: 88.656)
+04-09-2026 15:53:49.147 | Trade | → Modifying position PID13 (SL: 90.607, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:53.297 | Trade | Modifying position PID13 (SL: 90.597, TP: 88.656)
+04-09-2026 15:53:53.297 | Trade | → Modifying position PID13 (SL: 90.597, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:57.948 | Trade | Modifying position PID13 (SL: 90.587, TP: 88.656)
+04-09-2026 15:53:57.948 | Trade | → Modifying position PID13 (SL: 90.587, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:53:59.455 | Trade | Modifying position PID13 (SL: 90.567, TP: 88.656)
+04-09-2026 15:53:59.455 | Trade | → Modifying position PID13 (SL: 90.567, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:54:01.854 | Trade | Modifying position PID13 (SL: 90.547, TP: 88.656)
+04-09-2026 15:54:01.854 | Trade | → Modifying position PID13 (SL: 90.547, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:54:01.981 | Trade | Modifying position PID13 (SL: 90.537, TP: 88.656)
+04-09-2026 15:54:01.981 | Trade | → Modifying position PID13 (SL: 90.537, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:54:03.355 | Trade | Modifying position PID13 (SL: 90.527, TP: 88.656)
+04-09-2026 15:54:03.355 | Trade | → Modifying position PID13 (SL: 90.527, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:54:03.606 | Trade | Modifying position PID13 (SL: 90.517, TP: 88.656)
+04-09-2026 15:54:03.606 | Trade | → Modifying position PID13 (SL: 90.517, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:58:07.565 | Trade | Modifying position PID13 (SL: 90.498, TP: 88.656)
+04-09-2026 15:58:07.565 | Trade | → Modifying position PID13 (SL: 90.498, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:58:08.567 | Trade | Modifying position PID13 (SL: 90.488, TP: 88.656)
+04-09-2026 15:58:08.567 | Trade | → Modifying position PID13 (SL: 90.488, TP: 88.656) SUCCEEDED, Position PID13
+04-09-2026 15:58:18.428 | Trade | Modifying position PID13 (SL: 90.478, TP: 88.656)
+04-09-2026 15:58:18.428 | Trade | → Modifying position PID13 (SL: 90.478, TP: 88.656) SUCCEEDED, Position PID13
+07-09-2026 17:20:00.183 | Trade | Executing Market Order to Buy 390 XTIUSD (SL: 26.8, TP: 205.5)
+07-09-2026 17:20:00.183 | Trade | → Executing Market Order to Buy 390 XTIUSD (SL: 26.8, TP: 205.5) SUCCEEDED, Position PID14
+07-09-2026 17:35:02.421 | Trade | Modifying position PID14 (SL: 93.038, TP: 95.053)
+07-09-2026 17:35:02.421 | Trade | → Modifying position PID14 (SL: 93.038, TP: 95.053) SUCCEEDED, Position PID14
+07-09-2026 17:35:07.698 | Trade | Modifying position PID14 (SL: 93.048, TP: 95.053)
+07-09-2026 17:35:07.698 | Trade | → Modifying position PID14 (SL: 93.048, TP: 95.053) SUCCEEDED, Position PID14
+07-09-2026 17:35:07.823 | Trade | Modifying position PID14 (SL: 93.058, TP: 95.053)
+07-09-2026 17:35:07.823 | Trade | → Modifying position PID14 (SL: 93.058, TP: 95.053) SUCCEEDED, Position PID14
+08-09-2026 14:15:01.167 | Trade | Executing Market Order to Buy 340 XTIUSD (SL: 30.3, TP: 232.2)
+08-09-2026 14:15:01.167 | Trade | → Executing Market Order to Buy 340 XTIUSD (SL: 30.3, TP: 232.2) SUCCEEDED, Position PID15
+08-09-2026 15:45:00.065 | Trade | Executing Market Order to Sell 360 XTIUSD (SL: 28.7, TP: 220.1)
+08-09-2026 15:45:00.065 | Trade | → Executing Market Order to Sell 360 XTIUSD (SL: 28.7, TP: 220.1) SUCCEEDED, Position PID16
+08-09-2026 15:58:08.527 | Trade | Modifying position PID16 (SL: 93.318, TP: 91.161)
+08-09-2026 15:58:08.527 | Trade | → Modifying position PID16 (SL: 93.318, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:58:09.654 | Trade | Modifying position PID16 (SL: 93.308, TP: 91.161)
+08-09-2026 15:58:09.654 | Trade | → Modifying position PID16 (SL: 93.308, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:58:30.644 | Trade | Modifying position PID16 (SL: 93.298, TP: 91.161)
+08-09-2026 15:58:30.644 | Trade | → Modifying position PID16 (SL: 93.298, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:00.629 | Trade | Modifying position PID16 (SL: 93.288, TP: 91.161)
+08-09-2026 15:59:00.629 | Trade | → Modifying position PID16 (SL: 93.288, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:01.879 | Trade | Modifying position PID16 (SL: 93.268, TP: 91.161)
+08-09-2026 15:59:01.879 | Trade | → Modifying position PID16 (SL: 93.268, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:13.340 | Trade | Modifying position PID16 (SL: 93.258, TP: 91.161)
+08-09-2026 15:59:13.340 | Trade | → Modifying position PID16 (SL: 93.258, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:17.259 | Trade | Modifying position PID16 (SL: 93.238, TP: 91.161)
+08-09-2026 15:59:17.259 | Trade | → Modifying position PID16 (SL: 93.238, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:17.385 | Trade | Modifying position PID16 (SL: 93.228, TP: 91.161)
+08-09-2026 15:59:17.385 | Trade | → Modifying position PID16 (SL: 93.228, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:17.510 | Trade | Modifying position PID16 (SL: 93.218, TP: 91.161)
+08-09-2026 15:59:17.510 | Trade | → Modifying position PID16 (SL: 93.218, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:18.010 | Trade | Modifying position PID16 (SL: 93.208, TP: 91.161)
+08-09-2026 15:59:18.010 | Trade | → Modifying position PID16 (SL: 93.208, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:18.263 | Trade | Modifying position PID16 (SL: 93.198, TP: 91.161)
+08-09-2026 15:59:18.263 | Trade | → Modifying position PID16 (SL: 93.198, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 15:59:47.926 | Trade | Modifying position PID16 (SL: 93.178, TP: 91.161)
+08-09-2026 15:59:47.926 | Trade | → Modifying position PID16 (SL: 93.178, TP: 91.161) SUCCEEDED, Position PID16
+08-09-2026 17:00:00.134 | Trade | Executing Market Order to Buy 310 XTIUSD (SL: 32.9, TP: 252.2)
+08-09-2026 17:00:00.134 | Trade | → Executing Market Order to Buy 310 XTIUSD (SL: 32.9, TP: 252.2) SUCCEEDED, Position PID17
+09-09-2026 12:00:00.378 | Trade | Executing Market Order to Buy 350 XTIUSD (SL: 29.2, TP: 223.5)
+09-09-2026 12:00:00.378 | Trade | → Executing Market Order to Buy 350 XTIUSD (SL: 29.2, TP: 223.5) SUCCEEDED, Position PID18
+09-09-2026 12:00:52.965 | Trade | Modifying position PID18 (SL: 95.081, TP: 97.272)
+09-09-2026 12:00:52.965 | Trade | → Modifying position PID18 (SL: 95.081, TP: 97.272) SUCCEEDED, Position PID18
+09-09-2026 12:00:54.851 | Trade | Modifying position PID18 (SL: 95.091, TP: 97.272)
+09-09-2026 12:00:54.851 | Trade | → Modifying position PID18 (SL: 95.091, TP: 97.272) SUCCEEDED, Position PID18
+09-09-2026 12:00:59.101 | Trade | Modifying position PID18 (SL: 95.111, TP: 97.272)
+09-09-2026 12:00:59.101 | Trade | → Modifying position PID18 (SL: 95.111, TP: 97.272) SUCCEEDED, Position PID18
+09-09-2026 12:01:19.816 | Trade | Modifying position PID18 (SL: 95.121, TP: 97.272)
+09-09-2026 12:01:19.816 | Trade | → Modifying position PID18 (SL: 95.121, TP: 97.272) SUCCEEDED, Position PID18
+09-09-2026 12:01:20.207 | Trade | Modifying position PID18 (SL: 95.131, TP: 97.272)
+09-09-2026 12:01:20.207 | Trade | → Modifying position PID18 (SL: 95.131, TP: 97.272) SUCCEEDED, Position PID18
+09-09-2026 12:01:20.457 | Trade | Modifying position PID18 (SL: 95.141, TP: 97.272)
+09-09-2026 12:01:20.457 | Trade | → Modifying position PID18 (SL: 95.141, TP: 97.272) SUCCEEDED, Position PID18
+09-09-2026 12:01:43.329 | Trade | Modifying position PID18 (SL: 95.151, TP: 97.272)
+09-09-2026 12:01:43.329 | Trade | → Modifying position PID18 (SL: 95.151, TP: 97.272) SUCCEEDED, Position PID18
+09-09-2026 15:05:00.447 | Trade | Executing Market Order to Buy 310 XTIUSD (SL: 33.6, TP: 257.8)
+09-09-2026 15:05:00.447 | Trade | → Executing Market Order to Buy 310 XTIUSD (SL: 33.6, TP: 257.8) SUCCEEDED, Position PID19
+09-09-2026 15:27:04.111 | Trade | Modifying position PID19 (SL: 95.966, TP: 98.495)
+09-09-2026 15:27:04.111 | Trade | → Modifying position PID19 (SL: 95.966, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:04.236 | Trade | Modifying position PID19 (SL: 95.976, TP: 98.495)
+09-09-2026 15:27:04.236 | Trade | → Modifying position PID19 (SL: 95.976, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:07.499 | Trade | Modifying position PID19 (SL: 95.986, TP: 98.495)
+09-09-2026 15:27:07.499 | Trade | → Modifying position PID19 (SL: 95.986, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:12.041 | Trade | Modifying position PID19 (SL: 95.996, TP: 98.495)
+09-09-2026 15:27:12.041 | Trade | → Modifying position PID19 (SL: 95.996, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:24.877 | Trade | Modifying position PID19 (SL: 96.006, TP: 98.495)
+09-09-2026 15:27:24.877 | Trade | → Modifying position PID19 (SL: 96.006, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:37.921 | Trade | Modifying position PID19 (SL: 96.026, TP: 98.495)
+09-09-2026 15:27:37.921 | Trade | → Modifying position PID19 (SL: 96.026, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:39.538 | Trade | Modifying position PID19 (SL: 96.036, TP: 98.495)
+09-09-2026 15:27:39.538 | Trade | → Modifying position PID19 (SL: 96.036, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:40.289 | Trade | Modifying position PID19 (SL: 96.056, TP: 98.495)
+09-09-2026 15:27:40.289 | Trade | → Modifying position PID19 (SL: 96.056, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:27:40.414 | Trade | Modifying position PID19 (SL: 96.066, TP: 98.495)
+09-09-2026 15:27:40.414 | Trade | → Modifying position PID19 (SL: 96.066, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:28:59.775 | Trade | Modifying position PID19 (SL: 96.076, TP: 98.495)
+09-09-2026 15:28:59.775 | Trade | → Modifying position PID19 (SL: 96.076, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:29:38.128 | Trade | Modifying position PID19 (SL: 96.086, TP: 98.495)
+09-09-2026 15:29:38.128 | Trade | → Modifying position PID19 (SL: 96.086, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:29:38.632 | Trade | Modifying position PID19 (SL: 96.096, TP: 98.495)
+09-09-2026 15:29:38.632 | Trade | → Modifying position PID19 (SL: 96.096, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:29:42.196 | Trade | Modifying position PID19 (SL: 96.106, TP: 98.495)
+09-09-2026 15:29:42.196 | Trade | → Modifying position PID19 (SL: 96.106, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:29:59.229 | Trade | Modifying position PID19 (SL: 96.116, TP: 98.495)
+09-09-2026 15:29:59.229 | Trade | → Modifying position PID19 (SL: 96.116, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 15:34:22.054 | Trade | Modifying position PID19 (SL: 96.122, TP: 98.495)
+09-09-2026 15:34:22.054 | Trade | → Modifying position PID19 (SL: 96.122, TP: 98.495) SUCCEEDED, Position PID19
+09-09-2026 17:50:00.166 | Trade | Executing Market Order to Buy 260 XTIUSD (SL: 39, TP: 298.6)
+09-09-2026 17:50:00.166 | Trade | → Executing Market Order to Buy 260 XTIUSD (SL: 39, TP: 298.6) SUCCEEDED, Position PID20
+09-09-2026 18:05:32.389 | Trade | Modifying position PID20 (SL: 96.621, TP: 99.543)
+09-09-2026 18:05:32.389 | Trade | → Modifying position PID20 (SL: 96.621, TP: 99.543) SUCCEEDED, Position PID20
+09-09-2026 18:05:45.782 | Trade | Modifying position PID20 (SL: 96.631, TP: 99.543)
+09-09-2026 18:05:45.782 | Trade | → Modifying position PID20 (SL: 96.631, TP: 99.543) SUCCEEDED, Position PID20
+10-09-2026 15:05:00.962 | Trade | Executing Market Order to Buy 270 XTIUSD (SL: 38.7, TP: 296.4)
+10-09-2026 15:05:00.962 | Trade | → Executing Market Order to Buy 270 XTIUSD (SL: 38.7, TP: 296.4) SUCCEEDED, Position PID21
+10-09-2026 15:06:13.834 | Trade | Modifying position PID21 (SL: 99.271, TP: 102.164)
+10-09-2026 15:06:13.834 | Trade | → Modifying position PID21 (SL: 99.271, TP: 102.164) SUCCEEDED, Position PID21
+10-09-2026 15:06:35.580 | Trade | Modifying position PID21 (SL: 99.301, TP: 102.164)
+10-09-2026 15:06:35.580 | Trade | → Modifying position PID21 (SL: 99.301, TP: 102.164) SUCCEEDED, Position PID21
+10-09-2026 15:06:46.679 | Trade | Modifying position PID21 (SL: 99.311, TP: 102.164)
+10-09-2026 15:06:46.679 | Trade | → Modifying position PID21 (SL: 99.311, TP: 102.164) SUCCEEDED, Position PID21
+10-09-2026 15:06:47.055 | Trade | Modifying position PID21 (SL: 99.321, TP: 102.164)
+10-09-2026 15:06:47.055 | Trade | → Modifying position PID21 (SL: 99.321, TP: 102.164) SUCCEEDED, Position PID21
+10-09-2026 15:06:49.783 | Trade | Modifying position PID21 (SL: 99.331, TP: 102.164)
+10-09-2026 15:06:49.783 | Trade | → Modifying position PID21 (SL: 99.331, TP: 102.164) SUCCEEDED, Position PID21
+10-09-2026 15:07:05.908 | Trade | Modifying position PID21 (SL: 99.341, TP: 102.164)
+10-09-2026 15:07:05.908 | Trade | → Modifying position PID21 (SL: 99.341, TP: 102.164) SUCCEEDED, Position PID21
+10-09-2026 15:07:06.033 | Trade | Modifying position PID21 (SL: 99.351, TP: 102.164)
+10-09-2026 15:07:06.033 | Trade | → Modifying position PID21 (SL: 99.351, TP: 102.164) SUCCEEDED, Position PID21
+10-09-2026 18:30:00.043 | Trade | Executing Market Order to Buy 200 XTIUSD (SL: 52, TP: 398.4)
+10-09-2026 18:30:00.043 | Trade | → Executing Market Order to Buy 200 XTIUSD (SL: 52, TP: 398.4) SUCCEEDED, Position PID22
+10-09-2026 18:39:24.641 | Trade | Modifying position PID22 (SL: 100.74, TP: 104.645)
+10-09-2026 18:39:24.641 | Trade | → Modifying position PID22 (SL: 100.74, TP: 104.645) SUCCEEDED, Position PID22
+10-09-2026 18:39:28.310 | Trade | Modifying position PID22 (SL: 100.77, TP: 104.645)
+10-09-2026 18:39:28.310 | Trade | → Modifying position PID22 (SL: 100.77, TP: 104.645) SUCCEEDED, Position PID22
+10-09-2026 18:39:28.401 | Trade | Modifying position PID22 (SL: 100.78, TP: 104.645)
+10-09-2026 18:39:28.401 | Trade | → Modifying position PID22 (SL: 100.78, TP: 104.645) SUCCEEDED, Position PID22
+10-09-2026 18:39:42.732 | Trade | Modifying position PID22 (SL: 100.79, TP: 104.645)
+10-09-2026 18:39:42.732 | Trade | → Modifying position PID22 (SL: 100.79, TP: 104.645) SUCCEEDED, Position PID22
+10-09-2026 18:39:43.863 | Trade | Modifying position PID22 (SL: 100.8, TP: 104.645)
+10-09-2026 18:39:43.863 | Trade | → Modifying position PID22 (SL: 100.8, TP: 104.645) SUCCEEDED, Position PID22
+10-09-2026 18:39:45.622 | Trade | Modifying position PID22 (SL: 100.81, TP: 104.645)
+10-09-2026 18:39:45.622 | Trade | → Modifying position PID22 (SL: 100.81, TP: 104.645) SUCCEEDED, Position PID22
+10-09-2026 18:39:46.758 | Trade | Modifying position PID22 (SL: 100.84, TP: 104.645)
+10-09-2026 18:39:46.758 | Trade | → Modifying position PID22 (SL: 100.84, TP: 104.645) SUCCEEDED, Position PID22
+10-09-2026 18:39:47.516 | Trade | Modifying position PID22 (SL: 100.86, TP: 104.645)
+10-09-2026 18:39:47.516 | Trade | → Modifying position PID22 (SL: 100.86, TP: 104.645) SUCCEEDED, Position PID22
+11-09-2026 11:50:01.306 | Trade | Executing Market Order to Sell 200 XTIUSD (SL: 52.9, TP: 405.8)
+11-09-2026 11:50:01.306 | Trade | → Executing Market Order to Sell 200 XTIUSD (SL: 52.9, TP: 405.8) SUCCEEDED, Position PID23
+11-09-2026 12:00:48.752 | Trade | Modifying position PID23 (SL: 100.166, TP: 96.178)
+11-09-2026 12:00:48.752 | Trade | → Modifying position PID23 (SL: 100.166, TP: 96.178) SUCCEEDED, Position PID23
+11-09-2026 12:00:52.008 | Trade | Modifying position PID23 (SL: 100.156, TP: 96.178)
+11-09-2026 12:00:52.008 | Trade | → Modifying position PID23 (SL: 100.156, TP: 96.178) SUCCEEDED, Position PID23
+11-09-2026 12:01:30.614 | Trade | Modifying position PID23 (SL: 100.146, TP: 96.178)
+11-09-2026 12:01:30.614 | Trade | → Modifying position PID23 (SL: 100.146, TP: 96.178) SUCCEEDED, Position PID23
+11-09-2026 12:01:31.117 | Trade | Modifying position PID23 (SL: 100.136, TP: 96.178)
+11-09-2026 12:01:31.117 | Trade | → Modifying position PID23 (SL: 100.136, TP: 96.178) SUCCEEDED, Position PID23
+11-09-2026 12:01:31.494 | Trade | Modifying position PID23 (SL: 100.126, TP: 96.178)
+11-09-2026 12:01:31.494 | Trade | → Modifying position PID23 (SL: 100.126, TP: 96.178) SUCCEEDED, Position PID23
+11-09-2026 12:01:31.870 | Trade | Modifying position PID23 (SL: 100.106, TP: 96.178)
+11-09-2026 12:01:31.870 | Trade | → Modifying position PID23 (SL: 100.106, TP: 96.178) SUCCEEDED, Position PID23
+11-09-2026 12:01:33.629 | Trade | Modifying position PID23 (SL: 100.066, TP: 96.178)
+11-09-2026 12:01:33.629 | Trade | → Modifying position PID23 (SL: 100.066, TP: 96.178) SUCCEEDED, Position PID23
+11-09-2026 16:30:00.167 | Trade | Executing Market Order to Sell 200 XTIUSD (SL: 53, TP: 406.3)
+11-09-2026 16:30:00.167 | Trade | → Executing Market Order to Sell 200 XTIUSD (SL: 53, TP: 406.3) SUCCEEDED, Position PID24
+11-09-2026 18:50:00.162 | Trade | Executing Market Order to Sell 200 XTIUSD (SL: 52.6, TP: 403)
+11-09-2026 18:50:00.162 | Trade | → Executing Market Order to Sell 200 XTIUSD (SL: 52.6, TP: 403) SUCCEEDED, Position PID25
+14-09-2026 14:35:00.192 | Trade | Executing Market Order to Buy 220 XTIUSD (SL: 41.1, TP: 315.4)
+14-09-2026 14:35:00.192 | Trade | → Executing Market Order to Buy 220 XTIUSD (SL: 41.1, TP: 315.4) SUCCEEDED, Position PID26
+14-09-2026 14:50:06.153 | Trade | Modifying position PID26 (SL: 103.504, TP: 106.603)
+14-09-2026 14:50:06.153 | Trade | → Modifying position PID26 (SL: 103.504, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:50:06.404 | Trade | Modifying position PID26 (SL: 103.524, TP: 106.603)
+14-09-2026 14:50:06.404 | Trade | → Modifying position PID26 (SL: 103.524, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:50:07.030 | Trade | Modifying position PID26 (SL: 103.534, TP: 106.603)
+14-09-2026 14:50:07.030 | Trade | → Modifying position PID26 (SL: 103.534, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:50:08.327 | Trade | Modifying position PID26 (SL: 103.554, TP: 106.603)
+14-09-2026 14:50:08.327 | Trade | → Modifying position PID26 (SL: 103.554, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:50:09.332 | Trade | Modifying position PID26 (SL: 103.564, TP: 106.603)
+14-09-2026 14:50:09.332 | Trade | → Modifying position PID26 (SL: 103.564, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:53:25.415 | Trade | Modifying position PID26 (SL: 103.574, TP: 106.603)
+14-09-2026 14:53:25.415 | Trade | → Modifying position PID26 (SL: 103.574, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:53:25.542 | Trade | Modifying position PID26 (SL: 103.584, TP: 106.603)
+14-09-2026 14:53:25.542 | Trade | → Modifying position PID26 (SL: 103.584, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:53:27.974 | Trade | Modifying position PID26 (SL: 103.594, TP: 106.603)
+14-09-2026 14:53:27.974 | Trade | → Modifying position PID26 (SL: 103.594, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:53:28.981 | Trade | Modifying position PID26 (SL: 103.604, TP: 106.603)
+14-09-2026 14:53:28.981 | Trade | → Modifying position PID26 (SL: 103.604, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:53:29.487 | Trade | Modifying position PID26 (SL: 103.614, TP: 106.603)
+14-09-2026 14:53:29.487 | Trade | → Modifying position PID26 (SL: 103.614, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:56:52.222 | Trade | Modifying position PID26 (SL: 103.615, TP: 106.603)
+14-09-2026 14:56:52.222 | Trade | → Modifying position PID26 (SL: 103.615, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:56:52.467 | Trade | Modifying position PID26 (SL: 103.635, TP: 106.603)
+14-09-2026 14:56:52.467 | Trade | → Modifying position PID26 (SL: 103.635, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:56:55.487 | Trade | Modifying position PID26 (SL: 103.645, TP: 106.603)
+14-09-2026 14:56:55.487 | Trade | → Modifying position PID26 (SL: 103.645, TP: 106.603) SUCCEEDED, Position PID26
+14-09-2026 14:58:49.438 | Trade | Modifying position PID26 (SL: 103.655, TP: 106.603)
+14-09-2026 14:58:49.438 | Trade | → Modifying position PID26 (SL: 103.655, TP: 106.603) SUCCEEDED, Position PID26
+15-09-2026 10:15:00.113 | Trade | Executing Market Order to Buy 380 XTIUSD (SL: 26.9, TP: 206.2)
+15-09-2026 10:15:00.113 | Trade | → Executing Market Order to Buy 380 XTIUSD (SL: 26.9, TP: 206.2) SUCCEEDED, Position PID27
+15-09-2026 10:50:00.278 | Trade | Executing Market Order to Buy 340 XTIUSD (SL: 30, TP: 229.8)
+15-09-2026 10:50:00.278 | Trade | → Executing Market Order to Buy 340 XTIUSD (SL: 30, TP: 229.8) SUCCEEDED, Position PID28
+15-09-2026 11:00:36.958 | Trade | Modifying position PID28 (SL: 103.717, TP: 105.962)
+15-09-2026 11:00:36.958 | Trade | → Modifying position PID28 (SL: 103.717, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:00:57.064 | Trade | Modifying position PID28 (SL: 103.727, TP: 105.962)
+15-09-2026 11:00:57.064 | Trade | → Modifying position PID28 (SL: 103.727, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:01:26.451 | Trade | Modifying position PID28 (SL: 103.757, TP: 105.962)
+15-09-2026 11:01:26.451 | Trade | → Modifying position PID28 (SL: 103.757, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:01:26.577 | Trade | Modifying position PID28 (SL: 103.767, TP: 105.962)
+15-09-2026 11:01:26.577 | Trade | → Modifying position PID28 (SL: 103.767, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:01:35.235 | Trade | Modifying position PID28 (SL: 103.777, TP: 105.962)
+15-09-2026 11:01:35.235 | Trade | → Modifying position PID28 (SL: 103.777, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:01:35.361 | Trade | Modifying position PID28 (SL: 103.787, TP: 105.962)
+15-09-2026 11:01:35.361 | Trade | → Modifying position PID28 (SL: 103.787, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:01:35.736 | Trade | Modifying position PID28 (SL: 103.797, TP: 105.962)
+15-09-2026 11:01:35.736 | Trade | → Modifying position PID28 (SL: 103.797, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:01:50.895 | Trade | Modifying position PID28 (SL: 103.807, TP: 105.962)
+15-09-2026 11:01:50.895 | Trade | → Modifying position PID28 (SL: 103.807, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:02:16.374 | Trade | Modifying position PID28 (SL: 103.827, TP: 105.962)
+15-09-2026 11:02:16.374 | Trade | → Modifying position PID28 (SL: 103.827, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 11:02:21.994 | Trade | Modifying position PID28 (SL: 103.837, TP: 105.962)
+15-09-2026 11:02:21.994 | Trade | → Modifying position PID28 (SL: 103.837, TP: 105.962) SUCCEEDED, Position PID28
+15-09-2026 15:25:00.131 | Trade | Executing Market Order to Buy 280 XTIUSD (SL: 37, TP: 283.8)
+15-09-2026 15:25:00.131 | Trade | → Executing Market Order to Buy 280 XTIUSD (SL: 37, TP: 283.8) SUCCEEDED, Position PID29
+16-09-2026 12:55:00.197 | Trade | Executing Market Order to Sell 270 XTIUSD (SL: 37.1, TP: 284.1)
+16-09-2026 12:55:00.197 | Trade | → Executing Market Order to Sell 270 XTIUSD (SL: 37.1, TP: 284.1) SUCCEEDED, Position PID30
+16-09-2026 13:11:39.244 | Trade | Modifying position PID30 (SL: 104.073, TP: 101.297)
+16-09-2026 13:11:39.244 | Trade | → Modifying position PID30 (SL: 104.073, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:15:21.100 | Trade | Modifying position PID30 (SL: 104.07, TP: 101.297)
+16-09-2026 13:15:21.100 | Trade | → Modifying position PID30 (SL: 104.07, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:15:30.922 | Trade | Modifying position PID30 (SL: 104.06, TP: 101.297)
+16-09-2026 13:15:30.922 | Trade | → Modifying position PID30 (SL: 104.06, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:15:31.048 | Trade | Modifying position PID30 (SL: 104.05, TP: 101.297)
+16-09-2026 13:15:31.048 | Trade | → Modifying position PID30 (SL: 104.05, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:15:33.407 | Trade | Modifying position PID30 (SL: 104.04, TP: 101.297)
+16-09-2026 13:15:33.407 | Trade | → Modifying position PID30 (SL: 104.04, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:15:34.819 | Trade | Modifying position PID30 (SL: 104.03, TP: 101.297)
+16-09-2026 13:15:34.819 | Trade | → Modifying position PID30 (SL: 104.03, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:15:35.071 | Trade | Modifying position PID30 (SL: 104.02, TP: 101.297)
+16-09-2026 13:15:35.071 | Trade | → Modifying position PID30 (SL: 104.02, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:15:40.896 | Trade | Modifying position PID30 (SL: 104.01, TP: 101.297)
+16-09-2026 13:15:40.896 | Trade | → Modifying position PID30 (SL: 104.01, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:16:56.388 | Trade | Modifying position PID30 (SL: 103.99, TP: 101.297)
+16-09-2026 13:16:56.388 | Trade | → Modifying position PID30 (SL: 103.99, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:20:09.915 | Trade | Modifying position PID30 (SL: 103.988, TP: 101.297)
+16-09-2026 13:20:09.915 | Trade | → Modifying position PID30 (SL: 103.988, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:20:10.291 | Trade | Modifying position PID30 (SL: 103.968, TP: 101.297)
+16-09-2026 13:20:10.291 | Trade | → Modifying position PID30 (SL: 103.968, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:21:16.294 | Trade | Modifying position PID30 (SL: 103.948, TP: 101.297)
+16-09-2026 13:21:16.294 | Trade | → Modifying position PID30 (SL: 103.948, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:21:17.296 | Trade | Modifying position PID30 (SL: 103.928, TP: 101.297)
+16-09-2026 13:21:17.296 | Trade | → Modifying position PID30 (SL: 103.928, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 13:21:53.949 | Trade | Modifying position PID30 (SL: 103.918, TP: 101.297)
+16-09-2026 13:21:53.949 | Trade | → Modifying position PID30 (SL: 103.918, TP: 101.297) SUCCEEDED, Position PID30
+16-09-2026 17:05:00.154 | Trade | Executing Market Order to Sell 230 XTIUSD (SL: 43.3, TP: 331.6)
+16-09-2026 17:05:00.154 | Trade | → Executing Market Order to Sell 230 XTIUSD (SL: 43.3, TP: 331.6) SUCCEEDED, Position PID31
+16-09-2026 17:15:51.015 | Trade | Modifying position PID31 (SL: 103.889, TP: 100.631)
+16-09-2026 17:15:51.015 | Trade | → Modifying position PID31 (SL: 103.889, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:15:52.287 | Trade | Modifying position PID31 (SL: 103.859, TP: 100.631)
+16-09-2026 17:15:52.287 | Trade | → Modifying position PID31 (SL: 103.859, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:15:52.399 | Trade | Modifying position PID31 (SL: 103.849, TP: 100.631)
+16-09-2026 17:15:52.399 | Trade | → Modifying position PID31 (SL: 103.849, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:09.713 | Trade | Modifying position PID31 (SL: 103.839, TP: 100.631)
+16-09-2026 17:16:09.713 | Trade | → Modifying position PID31 (SL: 103.839, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:09.838 | Trade | Modifying position PID31 (SL: 103.829, TP: 100.631)
+16-09-2026 17:16:09.838 | Trade | → Modifying position PID31 (SL: 103.829, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:09.963 | Trade | Modifying position PID31 (SL: 103.819, TP: 100.631)
+16-09-2026 17:16:09.963 | Trade | → Modifying position PID31 (SL: 103.819, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:13.109 | Trade | Modifying position PID31 (SL: 103.799, TP: 100.631)
+16-09-2026 17:16:13.109 | Trade | → Modifying position PID31 (SL: 103.799, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:13.487 | Trade | Modifying position PID31 (SL: 103.789, TP: 100.631)
+16-09-2026 17:16:13.487 | Trade | → Modifying position PID31 (SL: 103.789, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:17.509 | Trade | Modifying position PID31 (SL: 103.759, TP: 100.631)
+16-09-2026 17:16:17.509 | Trade | → Modifying position PID31 (SL: 103.759, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:17.633 | Trade | Modifying position PID31 (SL: 103.749, TP: 100.631)
+16-09-2026 17:16:17.633 | Trade | → Modifying position PID31 (SL: 103.749, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:19.895 | Trade | Modifying position PID31 (SL: 103.739, TP: 100.631)
+16-09-2026 17:16:19.895 | Trade | → Modifying position PID31 (SL: 103.739, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:20.272 | Trade | Modifying position PID31 (SL: 103.729, TP: 100.631)
+16-09-2026 17:16:20.272 | Trade | → Modifying position PID31 (SL: 103.729, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:40.331 | Trade | Modifying position PID31 (SL: 103.709, TP: 100.631)
+16-09-2026 17:16:40.331 | Trade | → Modifying position PID31 (SL: 103.709, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:40.456 | Trade | Modifying position PID31 (SL: 103.679, TP: 100.631)
+16-09-2026 17:16:40.456 | Trade | → Modifying position PID31 (SL: 103.679, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:42.716 | Trade | Modifying position PID31 (SL: 103.669, TP: 100.631)
+16-09-2026 17:16:42.716 | Trade | → Modifying position PID31 (SL: 103.669, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:16:43.216 | Trade | Modifying position PID31 (SL: 103.659, TP: 100.631)
+16-09-2026 17:16:43.216 | Trade | → Modifying position PID31 (SL: 103.659, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:20:41.461 | Trade | Modifying position PID31 (SL: 103.641, TP: 100.631)
+16-09-2026 17:20:41.461 | Trade | → Modifying position PID31 (SL: 103.641, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:06.608 | Trade | Modifying position PID31 (SL: 103.631, TP: 100.631)
+16-09-2026 17:21:06.608 | Trade | → Modifying position PID31 (SL: 103.631, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:23.111 | Trade | Modifying position PID31 (SL: 103.621, TP: 100.631)
+16-09-2026 17:21:23.111 | Trade | → Modifying position PID31 (SL: 103.621, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:35.660 | Trade | Modifying position PID31 (SL: 103.591, TP: 100.631)
+16-09-2026 17:21:35.660 | Trade | → Modifying position PID31 (SL: 103.591, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:35.910 | Trade | Modifying position PID31 (SL: 103.581, TP: 100.631)
+16-09-2026 17:21:35.910 | Trade | → Modifying position PID31 (SL: 103.581, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:49.210 | Trade | Modifying position PID31 (SL: 103.571, TP: 100.631)
+16-09-2026 17:21:49.210 | Trade | → Modifying position PID31 (SL: 103.571, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:50.019 | Trade | Modifying position PID31 (SL: 103.551, TP: 100.631)
+16-09-2026 17:21:50.019 | Trade | → Modifying position PID31 (SL: 103.551, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:50.259 | Trade | Modifying position PID31 (SL: 103.541, TP: 100.631)
+16-09-2026 17:21:50.259 | Trade | → Modifying position PID31 (SL: 103.541, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:54.018 | Trade | Modifying position PID31 (SL: 103.531, TP: 100.631)
+16-09-2026 17:21:54.018 | Trade | → Modifying position PID31 (SL: 103.531, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:54.145 | Trade | Modifying position PID31 (SL: 103.521, TP: 100.631)
+16-09-2026 17:21:54.145 | Trade | → Modifying position PID31 (SL: 103.521, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:21:54.270 | Trade | Modifying position PID31 (SL: 103.511, TP: 100.631)
+16-09-2026 17:21:54.270 | Trade | → Modifying position PID31 (SL: 103.511, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:22:08.400 | Trade | Modifying position PID31 (SL: 103.501, TP: 100.631)
+16-09-2026 17:22:08.400 | Trade | → Modifying position PID31 (SL: 103.501, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:22:09.407 | Trade | Modifying position PID31 (SL: 103.491, TP: 100.631)
+16-09-2026 17:22:09.407 | Trade | → Modifying position PID31 (SL: 103.491, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:23:02.382 | Trade | Modifying position PID31 (SL: 103.481, TP: 100.631)
+16-09-2026 17:23:02.382 | Trade | → Modifying position PID31 (SL: 103.481, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:26:23.194 | Trade | Modifying position PID31 (SL: 103.471, TP: 100.631)
+16-09-2026 17:26:23.194 | Trade | → Modifying position PID31 (SL: 103.471, TP: 100.631) SUCCEEDED, Position PID31
+16-09-2026 17:26:23.570 | Trade | Modifying position PID31 (SL: 103.461, TP: 100.631)
+16-09-2026 17:26:23.570 | Trade | → Modifying position PID31 (SL: 103.461, TP: 100.631) SUCCEEDED, Position PID31
+17-09-2026 13:05:00.097 | Trade | Executing Market Order to Sell 230 XTIUSD (SL: 43.8, TP: 335.9)
+17-09-2026 13:05:00.097 | Trade | → Executing Market Order to Sell 230 XTIUSD (SL: 43.8, TP: 335.9) SUCCEEDED, Position PID32
+17-09-2026 13:06:57.883 | Trade | Modifying position PID32 (SL: 100.907, TP: 97.654)
+17-09-2026 13:06:57.883 | Trade | → Modifying position PID32 (SL: 100.907, TP: 97.654) SUCCEEDED, Position PID32
+17-09-2026 13:07:13.392 | Trade | Modifying position PID32 (SL: 100.897, TP: 97.654)
+17-09-2026 13:07:13.392 | Trade | → Modifying position PID32 (SL: 100.897, TP: 97.654) SUCCEEDED, Position PID32
+17-09-2026 13:07:28.701 | Trade | Modifying position PID32 (SL: 100.847, TP: 97.654)
+17-09-2026 13:07:28.701 | Trade | → Modifying position PID32 (SL: 100.847, TP: 97.654) SUCCEEDED, Position PID32
+17-09-2026 13:07:30.076 | Trade | Modifying position PID32 (SL: 100.817, TP: 97.654)
+17-09-2026 13:07:30.076 | Trade | → Modifying position PID32 (SL: 100.817, TP: 97.654) SUCCEEDED, Position PID32
+18-09-2026 13:55:00.079 | Trade | Executing Market Order to Sell 310 XTIUSD (SL: 33.6, TP: 257.8)
+18-09-2026 13:55:00.079 | Trade | → Executing Market Order to Sell 310 XTIUSD (SL: 33.6, TP: 257.8) SUCCEEDED, Position PID33
+18-09-2026 14:03:19.548 | Trade | Modifying position PID33 (SL: 100.306, TP: 97.773)
+18-09-2026 14:03:19.548 | Trade | → Modifying position PID33 (SL: 100.306, TP: 97.773) SUCCEEDED, Position PID33
+18-09-2026 14:03:19.673 | Trade | Modifying position PID33 (SL: 100.296, TP: 97.773)
+18-09-2026 14:03:19.673 | Trade | → Modifying position PID33 (SL: 100.296, TP: 97.773) SUCCEEDED, Position PID33
+18-09-2026 14:03:19.799 | Trade | Modifying position PID33 (SL: 100.286, TP: 97.773)
+18-09-2026 14:03:19.799 | Trade | → Modifying position PID33 (SL: 100.286, TP: 97.773) SUCCEEDED, Position PID33
+18-09-2026 14:05:00.900 | Trade | Modifying position PID33 (SL: 100.276, TP: 97.773)
+18-09-2026 14:05:00.900 | Trade | → Modifying position PID33 (SL: 100.276, TP: 97.773) SUCCEEDED, Position PID33
+18-09-2026 14:05:07.102 | Trade | Modifying position PID33 (SL: 100.266, TP: 97.773)
+18-09-2026 14:05:07.102 | Trade | → Modifying position PID33 (SL: 100.266, TP: 97.773) SUCCEEDED, Position PID33
+21-09-2026 13:05:00.453 | Trade | Executing Market Order to Sell 290 XTIUSD (SL: 35.1, TP: 269.2)
+21-09-2026 13:05:00.453 | Trade | → Executing Market Order to Sell 290 XTIUSD (SL: 35.1, TP: 269.2) SUCCEEDED, Position PID34
+21-09-2026 13:12:33.987 | Trade | Modifying position PID34 (SL: 98.386, TP: 95.753)
+21-09-2026 13:12:33.987 | Trade | → Modifying position PID34 (SL: 98.386, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:12:43.916 | Trade | Modifying position PID34 (SL: 98.376, TP: 95.753)
+21-09-2026 13:12:43.916 | Trade | → Modifying position PID34 (SL: 98.376, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:13:33.614 | Trade | Modifying position PID34 (SL: 98.346, TP: 95.753)
+21-09-2026 13:13:33.614 | Trade | → Modifying position PID34 (SL: 98.346, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:13:33.738 | Trade | Modifying position PID34 (SL: 98.326, TP: 95.753)
+21-09-2026 13:13:33.738 | Trade | → Modifying position PID34 (SL: 98.326, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:13:34.492 | Trade | Modifying position PID34 (SL: 98.306, TP: 95.753)
+21-09-2026 13:13:34.492 | Trade | → Modifying position PID34 (SL: 98.306, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:13:51.722 | Trade | Modifying position PID34 (SL: 98.296, TP: 95.753)
+21-09-2026 13:13:51.722 | Trade | → Modifying position PID34 (SL: 98.296, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:46.393 | Trade | Modifying position PID34 (SL: 98.286, TP: 95.753)
+21-09-2026 13:14:46.393 | Trade | → Modifying position PID34 (SL: 98.286, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:49.541 | Trade | Modifying position PID34 (SL: 98.246, TP: 95.753)
+21-09-2026 13:14:49.541 | Trade | → Modifying position PID34 (SL: 98.246, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:49.792 | Trade | Modifying position PID34 (SL: 98.236, TP: 95.753)
+21-09-2026 13:14:49.792 | Trade | → Modifying position PID34 (SL: 98.236, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:50.673 | Trade | Modifying position PID34 (SL: 98.226, TP: 95.753)
+21-09-2026 13:14:50.673 | Trade | → Modifying position PID34 (SL: 98.226, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:51.431 | Trade | Modifying position PID34 (SL: 98.216, TP: 95.753)
+21-09-2026 13:14:51.431 | Trade | → Modifying position PID34 (SL: 98.216, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:53.686 | Trade | Modifying position PID34 (SL: 98.206, TP: 95.753)
+21-09-2026 13:14:53.686 | Trade | → Modifying position PID34 (SL: 98.206, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:53.811 | Trade | Modifying position PID34 (SL: 98.196, TP: 95.753)
+21-09-2026 13:14:53.811 | Trade | → Modifying position PID34 (SL: 98.196, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:54.827 | Trade | Modifying position PID34 (SL: 98.186, TP: 95.753)
+21-09-2026 13:14:54.827 | Trade | → Modifying position PID34 (SL: 98.186, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:55.833 | Trade | Modifying position PID34 (SL: 98.176, TP: 95.753)
+21-09-2026 13:14:55.833 | Trade | → Modifying position PID34 (SL: 98.176, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:56.083 | Trade | Modifying position PID34 (SL: 98.166, TP: 95.753)
+21-09-2026 13:14:56.083 | Trade | → Modifying position PID34 (SL: 98.166, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:57.215 | Trade | Modifying position PID34 (SL: 98.156, TP: 95.753)
+21-09-2026 13:14:57.215 | Trade | → Modifying position PID34 (SL: 98.156, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:14:57.468 | Trade | Modifying position PID34 (SL: 98.146, TP: 95.753)
+21-09-2026 13:14:57.468 | Trade | → Modifying position PID34 (SL: 98.146, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:15:30.202 | Trade | Modifying position PID34 (SL: 98.093, TP: 95.753)
+21-09-2026 13:15:30.202 | Trade | → Modifying position PID34 (SL: 98.093, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:15:30.323 | Trade | Modifying position PID34 (SL: 98.073, TP: 95.753)
+21-09-2026 13:15:30.323 | Trade | → Modifying position PID34 (SL: 98.073, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:15:56.612 | Trade | Modifying position PID34 (SL: 98.063, TP: 95.753)
+21-09-2026 13:15:56.612 | Trade | → Modifying position PID34 (SL: 98.063, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:16:01.169 | Trade | Modifying position PID34 (SL: 98.053, TP: 95.753)
+21-09-2026 13:16:01.169 | Trade | → Modifying position PID34 (SL: 98.053, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:16:41.089 | Trade | Modifying position PID34 (SL: 98.043, TP: 95.753)
+21-09-2026 13:16:41.089 | Trade | → Modifying position PID34 (SL: 98.043, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:16:57.546 | Trade | Modifying position PID34 (SL: 98.013, TP: 95.753)
+21-09-2026 13:16:57.546 | Trade | → Modifying position PID34 (SL: 98.013, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:17:03.290 | Trade | Modifying position PID34 (SL: 98.003, TP: 95.753)
+21-09-2026 13:17:03.290 | Trade | → Modifying position PID34 (SL: 98.003, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:17:06.101 | Trade | Modifying position PID34 (SL: 97.983, TP: 95.753)
+21-09-2026 13:17:06.101 | Trade | → Modifying position PID34 (SL: 97.983, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:17:19.499 | Trade | Modifying position PID34 (SL: 97.973, TP: 95.753)
+21-09-2026 13:17:19.499 | Trade | → Modifying position PID34 (SL: 97.973, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:17:26.059 | Trade | Modifying position PID34 (SL: 97.943, TP: 95.753)
+21-09-2026 13:17:26.059 | Trade | → Modifying position PID34 (SL: 97.943, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:17:26.436 | Trade | Modifying position PID34 (SL: 97.933, TP: 95.753)
+21-09-2026 13:17:26.436 | Trade | → Modifying position PID34 (SL: 97.933, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:17:27.065 | Trade | Modifying position PID34 (SL: 97.923, TP: 95.753)
+21-09-2026 13:17:27.065 | Trade | → Modifying position PID34 (SL: 97.923, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:17:27.316 | Trade | Modifying position PID34 (SL: 97.913, TP: 95.753)
+21-09-2026 13:17:27.316 | Trade | → Modifying position PID34 (SL: 97.913, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:18:55.453 | Trade | Modifying position PID34 (SL: 97.903, TP: 95.753)
+21-09-2026 13:18:55.453 | Trade | → Modifying position PID34 (SL: 97.903, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:18:56.456 | Trade | Modifying position PID34 (SL: 97.893, TP: 95.753)
+21-09-2026 13:18:56.456 | Trade | → Modifying position PID34 (SL: 97.893, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:18:56.831 | Trade | Modifying position PID34 (SL: 97.883, TP: 95.753)
+21-09-2026 13:18:56.831 | Trade | → Modifying position PID34 (SL: 97.883, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 13:19:23.855 | Trade | Modifying position PID34 (SL: 97.873, TP: 95.753)
+21-09-2026 13:19:23.855 | Trade | → Modifying position PID34 (SL: 97.873, TP: 95.753) SUCCEEDED, Position PID34
+21-09-2026 16:20:00.341 | Trade | Executing Market Order to Sell 250 XTIUSD (SL: 41.8, TP: 320.6)
+21-09-2026 16:20:00.341 | Trade | → Executing Market Order to Sell 250 XTIUSD (SL: 41.8, TP: 320.6) SUCCEEDED, Position PID35
+22-09-2026 16:30:00.151 | Trade | Executing Market Order to Sell 200 XTIUSD (SL: 52.6, TP: 403.6)
+22-09-2026 16:30:00.151 | Trade | → Executing Market Order to Sell 200 XTIUSD (SL: 52.6, TP: 403.6) SUCCEEDED, Position PID36
+23-09-2026 14:25:00.106 | Trade | Executing Market Order to Buy 280 XTIUSD (SL: 32.9, TP: 252.6)
+23-09-2026 14:25:00.106 | Trade | → Executing Market Order to Buy 280 XTIUSD (SL: 32.9, TP: 252.6) SUCCEEDED, Position PID37
+23-09-2026 14:26:53.472 | Trade | Modifying position PID37 (SL: 94.821, TP: 97.301)
+23-09-2026 14:26:53.472 | Trade | → Modifying position PID37 (SL: 94.821, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:27:01.186 | Trade | Modifying position PID37 (SL: 94.831, TP: 97.301)
+23-09-2026 14:27:01.186 | Trade | → Modifying position PID37 (SL: 94.831, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:27:20.105 | Trade | Modifying position PID37 (SL: 94.841, TP: 97.301)
+23-09-2026 14:27:20.105 | Trade | → Modifying position PID37 (SL: 94.841, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:27:20.606 | Trade | Modifying position PID37 (SL: 94.851, TP: 97.301)
+23-09-2026 14:27:20.606 | Trade | → Modifying position PID37 (SL: 94.851, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:27:53.955 | Trade | Modifying position PID37 (SL: 94.861, TP: 97.301)
+23-09-2026 14:27:53.955 | Trade | → Modifying position PID37 (SL: 94.861, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:27:54.211 | Trade | Modifying position PID37 (SL: 94.881, TP: 97.301)
+23-09-2026 14:27:54.211 | Trade | → Modifying position PID37 (SL: 94.881, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:27:57.655 | Trade | Modifying position PID37 (SL: 94.921, TP: 97.301)
+23-09-2026 14:27:57.655 | Trade | → Modifying position PID37 (SL: 94.921, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:28:02.123 | Trade | Modifying position PID37 (SL: 94.931, TP: 97.301)
+23-09-2026 14:28:02.123 | Trade | → Modifying position PID37 (SL: 94.931, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:28:02.238 | Trade | Modifying position PID37 (SL: 94.941, TP: 97.301)
+23-09-2026 14:28:02.238 | Trade | → Modifying position PID37 (SL: 94.941, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:28:02.370 | Trade | Modifying position PID37 (SL: 94.961, TP: 97.301)
+23-09-2026 14:28:02.370 | Trade | → Modifying position PID37 (SL: 94.961, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 14:28:02.743 | Trade | Modifying position PID37 (SL: 94.991, TP: 97.301)
+23-09-2026 14:28:02.743 | Trade | → Modifying position PID37 (SL: 94.991, TP: 97.301) SUCCEEDED, Position PID37
+23-09-2026 18:50:00.073 | Trade | Executing Market Order to Buy 210 XTIUSD (SL: 49.7, TP: 380.7)
+23-09-2026 18:50:00.073 | Trade | → Executing Market Order to Buy 210 XTIUSD (SL: 49.7, TP: 380.7) SUCCEEDED, Position PID38
+23-09-2026 19:12:43.371 | Trade | Modifying position PID38 (SL: 97.022, TP: 100.752)
+23-09-2026 19:12:43.371 | Trade | → Modifying position PID38 (SL: 97.022, TP: 100.752) SUCCEEDED, Position PID38
+24-09-2026 11:20:00.028 | Trade | Executing Market Order to Buy 270 XTIUSD (SL: 38.6, TP: 295.8)
+24-09-2026 11:20:00.028 | Trade | → Executing Market Order to Buy 270 XTIUSD (SL: 38.6, TP: 295.8) SUCCEEDED, Position PID39
+24-09-2026 14:50:00.142 | Trade | Executing Market Order to Buy 290 XTIUSD (SL: 35.8, TP: 274.3)
+24-09-2026 14:50:00.142 | Trade | → Executing Market Order to Buy 290 XTIUSD (SL: 35.8, TP: 274.3) SUCCEEDED, Position PID40
+24-09-2026 15:38:30.515 | Trade | Modifying position PID40 (SL: 98.062, TP: 100.753)
+24-09-2026 15:38:30.515 | Trade | → Modifying position PID40 (SL: 98.062, TP: 100.753) SUCCEEDED, Position PID40
+24-09-2026 15:38:30.765 | Trade | Modifying position PID40 (SL: 98.072, TP: 100.753)
+24-09-2026 15:38:30.765 | Trade | → Modifying position PID40 (SL: 98.072, TP: 100.753) SUCCEEDED, Position PID40
+24-09-2026 15:38:44.038 | Trade | Modifying position PID40 (SL: 98.082, TP: 100.753)
+24-09-2026 15:38:44.038 | Trade | → Modifying position PID40 (SL: 98.082, TP: 100.753) SUCCEEDED, Position PID40
+24-09-2026 15:39:42.285 | Trade | Modifying position PID40 (SL: 98.092, TP: 100.753)
+24-09-2026 15:39:42.285 | Trade | → Modifying position PID40 (SL: 98.092, TP: 100.753) SUCCEEDED, Position PID40
+24-09-2026 15:40:01.523 | Trade | Modifying position PID40 (SL: 98.093, TP: 100.753)
+24-09-2026 15:40:01.523 | Trade | → Modifying position PID40 (SL: 98.093, TP: 100.753) SUCCEEDED, Position PID40
+25-09-2026 11:45:00.045 | Trade | Executing Market Order to Sell 310 XTIUSD (SL: 33.5, TP: 257.2)
+25-09-2026 11:45:00.045 | Trade | → Executing Market Order to Sell 310 XTIUSD (SL: 33.5, TP: 257.2) SUCCEEDED, Position PID41
+25-09-2026 11:45:53.934 | Trade | Modifying position PID41 (SL: 97.133, TP: 94.624)
+25-09-2026 11:45:53.934 | Trade | → Modifying position PID41 (SL: 97.133, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:46:00.498 | Trade | Modifying position PID41 (SL: 97.123, TP: 94.624)
+25-09-2026 11:46:00.498 | Trade | → Modifying position PID41 (SL: 97.123, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:46:05.596 | Trade | Modifying position PID41 (SL: 97.113, TP: 94.624)
+25-09-2026 11:46:05.596 | Trade | → Modifying position PID41 (SL: 97.113, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:46:09.291 | Trade | Modifying position PID41 (SL: 97.103, TP: 94.624)
+25-09-2026 11:46:09.291 | Trade | → Modifying position PID41 (SL: 97.103, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:46:10.050 | Trade | Modifying position PID41 (SL: 97.093, TP: 94.624)
+25-09-2026 11:46:10.050 | Trade | → Modifying position PID41 (SL: 97.093, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:46:16.426 | Trade | Modifying position PID41 (SL: 97.083, TP: 94.624)
+25-09-2026 11:46:16.426 | Trade | → Modifying position PID41 (SL: 97.083, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:46:16.674 | Trade | Modifying position PID41 (SL: 97.063, TP: 94.624)
+25-09-2026 11:46:16.674 | Trade | → Modifying position PID41 (SL: 97.063, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:49:04.772 | Trade | Modifying position PID41 (SL: 97.053, TP: 94.624)
+25-09-2026 11:49:04.772 | Trade | → Modifying position PID41 (SL: 97.053, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:49:04.903 | Trade | Modifying position PID41 (SL: 97.043, TP: 94.624)
+25-09-2026 11:49:04.903 | Trade | → Modifying position PID41 (SL: 97.043, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:50:19.394 | Trade | Modifying position PID41 (SL: 97.036, TP: 94.624)
+25-09-2026 11:50:19.394 | Trade | → Modifying position PID41 (SL: 97.036, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:50:22.344 | Trade | Modifying position PID41 (SL: 97.026, TP: 94.624)
+25-09-2026 11:50:22.344 | Trade | → Modifying position PID41 (SL: 97.026, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:50:29.610 | Trade | Modifying position PID41 (SL: 97.016, TP: 94.624)
+25-09-2026 11:50:29.610 | Trade | → Modifying position PID41 (SL: 97.016, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:50:30.608 | Trade | Modifying position PID41 (SL: 97.006, TP: 94.624)
+25-09-2026 11:50:30.608 | Trade | → Modifying position PID41 (SL: 97.006, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:50:31.744 | Trade | Modifying position PID41 (SL: 96.996, TP: 94.624)
+25-09-2026 11:50:31.744 | Trade | → Modifying position PID41 (SL: 96.996, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:51:05.892 | Trade | Modifying position PID41 (SL: 96.986, TP: 94.624)
+25-09-2026 11:51:05.892 | Trade | → Modifying position PID41 (SL: 96.986, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:52:48.494 | Trade | Modifying position PID41 (SL: 96.976, TP: 94.624)
+25-09-2026 11:52:48.494 | Trade | → Modifying position PID41 (SL: 96.976, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:52:52.119 | Trade | Modifying position PID41 (SL: 96.966, TP: 94.624)
+25-09-2026 11:52:52.119 | Trade | → Modifying position PID41 (SL: 96.966, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:52:58.192 | Trade | Modifying position PID41 (SL: 96.946, TP: 94.624)
+25-09-2026 11:52:58.192 | Trade | → Modifying position PID41 (SL: 96.946, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:53:00.730 | Trade | Modifying position PID41 (SL: 96.936, TP: 94.624)
+25-09-2026 11:53:00.730 | Trade | → Modifying position PID41 (SL: 96.936, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:53:08.723 | Trade | Modifying position PID41 (SL: 96.926, TP: 94.624)
+25-09-2026 11:53:08.723 | Trade | → Modifying position PID41 (SL: 96.926, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:53:44.594 | Trade | Modifying position PID41 (SL: 96.916, TP: 94.624)
+25-09-2026 11:53:44.594 | Trade | → Modifying position PID41 (SL: 96.916, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:53:45.835 | Trade | Modifying position PID41 (SL: 96.896, TP: 94.624)
+25-09-2026 11:53:45.835 | Trade | → Modifying position PID41 (SL: 96.896, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:54:35.680 | Trade | Modifying position PID41 (SL: 96.886, TP: 94.624)
+25-09-2026 11:54:35.680 | Trade | → Modifying position PID41 (SL: 96.886, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:54:35.807 | Trade | Modifying position PID41 (SL: 96.876, TP: 94.624)
+25-09-2026 11:54:35.807 | Trade | → Modifying position PID41 (SL: 96.876, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:54:41.283 | Trade | Modifying position PID41 (SL: 96.856, TP: 94.624)
+25-09-2026 11:54:41.283 | Trade | → Modifying position PID41 (SL: 96.856, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:54:45.144 | Trade | Modifying position PID41 (SL: 96.846, TP: 94.624)
+25-09-2026 11:54:45.144 | Trade | → Modifying position PID41 (SL: 96.846, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:54:45.270 | Trade | Modifying position PID41 (SL: 96.836, TP: 94.624)
+25-09-2026 11:54:45.270 | Trade | → Modifying position PID41 (SL: 96.836, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:00.678 | Trade | Modifying position PID41 (SL: 96.827, TP: 94.624)
+25-09-2026 11:55:00.678 | Trade | → Modifying position PID41 (SL: 96.827, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:00.804 | Trade | Modifying position PID41 (SL: 96.817, TP: 94.624)
+25-09-2026 11:55:00.804 | Trade | → Modifying position PID41 (SL: 96.817, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:01.186 | Trade | Modifying position PID41 (SL: 96.807, TP: 94.624)
+25-09-2026 11:55:01.186 | Trade | → Modifying position PID41 (SL: 96.807, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:01.560 | Trade | Modifying position PID41 (SL: 96.797, TP: 94.624)
+25-09-2026 11:55:01.560 | Trade | → Modifying position PID41 (SL: 96.797, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:03.459 | Trade | Modifying position PID41 (SL: 96.777, TP: 94.624)
+25-09-2026 11:55:03.459 | Trade | → Modifying position PID41 (SL: 96.777, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:03.833 | Trade | Modifying position PID41 (SL: 96.747, TP: 94.624)
+25-09-2026 11:55:03.833 | Trade | → Modifying position PID41 (SL: 96.747, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:03.959 | Trade | Modifying position PID41 (SL: 96.727, TP: 94.624)
+25-09-2026 11:55:03.959 | Trade | → Modifying position PID41 (SL: 96.727, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:06.096 | Trade | Modifying position PID41 (SL: 96.717, TP: 94.624)
+25-09-2026 11:55:06.096 | Trade | → Modifying position PID41 (SL: 96.717, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:07.222 | Trade | Modifying position PID41 (SL: 96.707, TP: 94.624)
+25-09-2026 11:55:07.222 | Trade | → Modifying position PID41 (SL: 96.707, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:07.599 | Trade | Modifying position PID41 (SL: 96.687, TP: 94.624)
+25-09-2026 11:55:07.599 | Trade | → Modifying position PID41 (SL: 96.687, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:09.728 | Trade | Modifying position PID41 (SL: 96.677, TP: 94.624)
+25-09-2026 11:55:09.728 | Trade | → Modifying position PID41 (SL: 96.677, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:09.855 | Trade | Modifying position PID41 (SL: 96.667, TP: 94.624)
+25-09-2026 11:55:09.855 | Trade | → Modifying position PID41 (SL: 96.667, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:10.105 | Trade | Modifying position PID41 (SL: 96.647, TP: 94.624)
+25-09-2026 11:55:10.105 | Trade | → Modifying position PID41 (SL: 96.647, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:10.483 | Trade | Modifying position PID41 (SL: 96.637, TP: 94.624)
+25-09-2026 11:55:10.483 | Trade | → Modifying position PID41 (SL: 96.637, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:11.946 | Trade | Modifying position PID41 (SL: 96.617, TP: 94.624)
+25-09-2026 11:55:11.946 | Trade | → Modifying position PID41 (SL: 96.617, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:55:14.979 | Trade | Modifying position PID41 (SL: 96.607, TP: 94.624)
+25-09-2026 11:55:14.979 | Trade | → Modifying position PID41 (SL: 96.607, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:56:55.598 | Trade | Modifying position PID41 (SL: 96.597, TP: 94.624)
+25-09-2026 11:56:55.598 | Trade | → Modifying position PID41 (SL: 96.597, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:57:03.113 | Trade | Modifying position PID41 (SL: 96.587, TP: 94.624)
+25-09-2026 11:57:03.113 | Trade | → Modifying position PID41 (SL: 96.587, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:57:36.213 | Trade | Modifying position PID41 (SL: 96.577, TP: 94.624)
+25-09-2026 11:57:36.213 | Trade | → Modifying position PID41 (SL: 96.577, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:57:47.154 | Trade | Modifying position PID41 (SL: 96.567, TP: 94.624)
+25-09-2026 11:57:47.154 | Trade | → Modifying position PID41 (SL: 96.567, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:57:57.600 | Trade | Modifying position PID41 (SL: 96.547, TP: 94.624)
+25-09-2026 11:57:57.600 | Trade | → Modifying position PID41 (SL: 96.547, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:58:27.118 | Trade | Modifying position PID41 (SL: 96.537, TP: 94.624)
+25-09-2026 11:58:27.118 | Trade | → Modifying position PID41 (SL: 96.537, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 11:58:29.228 | Trade | Modifying position PID41 (SL: 96.527, TP: 94.624)
+25-09-2026 11:58:29.228 | Trade | → Modifying position PID41 (SL: 96.527, TP: 94.624) SUCCEEDED, Position PID41
+25-09-2026 14:30:02.467 | Trade | Executing Market Order to Sell 310 XTIUSD (SL: 33.4, TP: 256.3)
+25-09-2026 14:30:02.467 | Trade | → Executing Market Order to Sell 310 XTIUSD (SL: 33.4, TP: 256.3) SUCCEEDED, Position PID42
+25-09-2026 14:35:53.528 | Trade | Modifying position PID42 (SL: 96.481, TP: 93.983)
+25-09-2026 14:35:53.528 | Trade | → Modifying position PID42 (SL: 96.481, TP: 93.983) SUCCEEDED, Position PID42
+27/09/2026 23:59:57.457 | Info | CBot instance [hmax_gold, XTIUSD, m5] stopped.

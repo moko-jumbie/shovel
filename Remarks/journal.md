@@ -190,3 +190,18 @@ SMT POI: first pass over 20 of 43147 closed bars (2026-10-01 19:00 to 2026-10-02
 ## Lookback is still not comparable to the chart
 
 `POI Lookback Bars` is bounded by the source series, not by the chart, and the two are unrelated. If I want zones visible rather than clamped, I should bound the lookback to roughly the chart's own depth, or compare zone ages against the chart's first bar instead of a fixed bar count.
+
+## Zones drawn near the start of the chart
+
+`Draw SMT POIs` put every rectangle at the left edge instead of at the time it belongs to. The renderer's binary search was finding the right chronological index and then *un-converting* it: `index = Count - 1 - (lo - 1)`, because the code believed a chart bar index counts back from the newest bar.
+
+It does not. A chart bar index **is** the series' chronological index, 0 = oldest. cTrader documents it directly - `DrawRiskReward`'s two overloads are shown as `Chart.LastVisibleBarIndex - 10` and `Bars.OpenTimes[Chart.LastVisibleBarIndex - 10]`, and the drawing guide offers `Bars.OpenTimes[Chart.LastVisibleBarIndex]` as the time form of `Chart.LastVisibleBarIndex` - and `OpenTimes[0]` being the oldest bar was already established above from the chart's own date range. So a zone 50 bars back was being handed to `Chart.DrawRectangle` as bar 50, i.e. 50 bars from the chart's *start*, while old zones were mirrored toward the right.
+
+Two more errors in the same function pushed the same way:
+
+- A time at or after the newest bar (the normal case for a live zone, whose edge is `origin + POI Extend`) returned index 0 - the **oldest** bar - instead of `Count - 1`, so the right edge was pinned to the left edge too.
+- The "older than the chart's history" clamp used `Count - 1` for the origin, which under chronological indexing is the newest bar, not the oldest.
+
+Fix, all in `PoiRenderer`: `TryGetBarIndex` returns the chronological index unchanged, clamps future times to `Count - 1`, reports pre-history times to the caller which clamps them to 0, and a zone that lands pinned inside the oldest bar is widened by one bar so it cannot collapse into a zero-width rectangle. The detector's comments that called a shift a "bar index" were reworded as well - that terminology is what produced the bug in the first place, and `BarsSince` in the robot core is the one place a `Count - 1 - index` shift is genuinely correct, because it returns "bars ago", not an index.
+
+Worth re-checking on the next run: the draw log's `clamped to the chart's range` count should be near zero on a chart with real depth, and each zone's rectangle should start under the origin bar named in its `Comment`.

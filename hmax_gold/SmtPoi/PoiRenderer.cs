@@ -209,11 +209,17 @@ namespace cAlgo.Robots
         /// Index of the chart bar that contains, or most closely precedes, a time.
         ///
         /// OpenTimes is CHRONOLOGICAL — index 0 is the oldest bar the chart holds
-        /// and Count - 1 the newest — while chart bar indices count back from the
-        /// newest. The two are not the same ordering, and treating them as one
-        /// returns bar 0 for almost every time, which draws every zone on the
-        /// most recent bar. So the search runs in chronological order and the
-        /// result is converted to a bar index on the way out.
+        /// and Count - 1 the newest — and a chart bar index is the SAME ordering,
+        /// not a shift counted back from the newest bar. cTrader states the
+        /// equivalence itself: the bar-index and time overloads of DrawRiskReward
+        /// are documented as `Chart.LastVisibleBarIndex - 10` and
+        /// `Bars.OpenTimes[Chart.LastVisibleBarIndex - 10]`, and the drawing guide
+        /// offers `Bars.OpenTimes[Chart.LastVisibleBarIndex]` as the time form of
+        /// `Chart.LastVisibleBarIndex`. So the chronological index the search
+        /// finds is handed straight to Chart.Draw*; converting it into a
+        /// bars-back-from-the-newest shift (Count - 1 - index) mirrors every zone
+        /// onto the opposite end of the chart, which is what drew zones near the
+        /// chart's start instead of at their own time.
         ///
         /// This is a binary search rather than TimeSeries.GetIndexByTime because
         /// that method's behaviour for a time that is not an exact bar open is not
@@ -233,10 +239,12 @@ namespace cAlgo.Robots
             if (time < bars.OpenTimes[0])
                 return false;
 
-            // Newer than the newest bar, including the forming bar.
+            // Newer than the newest bar, including the forming bar. Anchors to
+            // the newest bar: a chart object cannot be placed on an index that
+            // does not exist yet, and index 0 is the OLDEST bar, not this one.
             if (time >= bars.OpenTimes[newest])
             {
-                index = 0;
+                index = newest;
                 return true;
             }
 
@@ -255,7 +263,7 @@ namespace cAlgo.Robots
                     hi = mid;
             }
 
-            index = bars.Count - 1 - (lo - 1);
+            index = lo - 1;
             return true;
         }
 
@@ -272,7 +280,6 @@ namespace cAlgo.Robots
             if (zone.EndTime <= zone.OriginTime)
                 return false;
 
-            int oldest = bars.Count - 1;
             int from;
             int to;
 
@@ -285,7 +292,7 @@ namespace cAlgo.Robots
 
             if (!TryGetBarIndex(bars, zone.OriginTime, out from))
             {
-                from = oldest;
+                from = 0;
                 clamped = true;
             }
 
@@ -298,8 +305,17 @@ namespace cAlgo.Robots
             if (clamped)
                 report.Clamped++;
 
-            if (to <= from && zone.EndTime <= zone.OriginTime)
-                return false;
+            // A zone pinned entirely into the oldest bar would be a zero-width
+            // rectangle anchored at a time the chart does not hold, which renders
+            // as nothing. Give it one bar of width so a zone older than the
+            // history is still visible at the left edge instead of silently gone.
+            if (clamped && to <= from)
+            {
+                to = from + 1;
+
+                if (to > bars.Count - 1)
+                    to = bars.Count - 1;
+            }
 
             double top = Math.Max(zone.Top, zone.Bottom);
             double bottom = Math.Min(zone.Top, zone.Bottom);
@@ -321,11 +337,12 @@ namespace cAlgo.Robots
             // a zone is two objects: a translucent body and an opaque outline
             // sitting on top of it. One rectangle could not do both jobs.
             //
-            // Bar indices run newest-first, so a zone that started in the past
-            // has from > to. Only from == to means the zone sits inside a single
-            // chart bar, and that is the one case where a bar-index anchor would
-            // collapse it to zero width. Anchoring by index is otherwise what
-            // makes a higher-timeframe timestamp land on a real chart bar.
+            // Chart bar indices are chronological (0 = oldest bar), so a zone
+            // that started in the past has from < to. Only from == to means the
+            // zone sits inside a single chart bar, and that is the one case where
+            // a bar-index anchor would collapse it to zero width, so it falls
+            // back to the time overloads and lets cTrader place both edges inside
+            // that bar.
             bool anchorByBar = to != from;
 
             ChartRectangle body = anchorByBar

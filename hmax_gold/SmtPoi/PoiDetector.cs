@@ -61,11 +61,13 @@ namespace cAlgo.Robots
             _count = n;
             _zones.Clear();
 
-            // Bars[0] is the forming bar, so the newest CLOSED bar sits at
-            // series index 1 and the oldest closed bar at Count - 1. Reading
-            // forward from index 1 is what makes buffer index 0 the newest
-            // closed bar, matching the convention documented at the top of this
-            // file.
+            // The series itself is CHRONOLOGICAL — index 0 is the oldest bar and
+            // Count - 1 the forming bar — so a shift counted back from the newest
+            // bar becomes a chronological index through Count - 1 - shift. The
+            // newest closed bar is therefore shift 1, chronological Count - 2, and
+            // the loop below walks that shift forward while it walks backwards
+            // through time. That is what makes buffer index 0 the newest closed
+            // bar, matching the convention documented at the top of this file.
             const int firstClosedIndex = 1;
 
             TimeSpan shortestGap = TimeSpan.Zero;
@@ -74,13 +76,16 @@ namespace cAlgo.Robots
             bool havePreviousClose = false;
 
             // A series exposes its raw arrays in CHRONOLOGICAL order — index 0 is
-            // the oldest bar — while a bar index counts back from the newest. The
-            // two are not interchangeable, and reading an array as though it were
-            // bar-indexed does not throw: it silently scans the oldest part of
-            // the history. That is how a 20-bar window on a 2026 chart ended up
-            // reporting zones dated 2013, every one of which was then off-chart.
-            // So bar index c is chronological index Count - 1 - c, and the
-            // invariant below proves it rather than trusting the mapping.
+            // the oldest bar. What counts back from the newest bar is a *shift*
+            // (Last(0), "bars ago"), and reading an array with a shift instead of
+            // a chronological index does not throw: it silently scans the oldest
+            // part of the history. That is how a 20-bar window on a 2026 chart
+            // ended up reporting zones dated 2013, every one of which was
+            // off-chart. So shift c is chronological index Count - 1 - c, and the
+            // invariant below proves the mapping rather than trusting it. Note
+            // that this conversion is for reading series values only: chart-object
+            // bar indices are already chronological and must NOT be shifted, which
+            // is what misplaced zones in PoiRenderer.
             for (int i = 0; i < n; i++)
             {
                 int p = source.Count - 1 - (firstClosedIndex + i);

@@ -24,6 +24,11 @@ namespace cAlgo.Robots
         public int Zones;
         public int Drawn;
         public int Clamped;
+
+        // Zones the object budget refused to draw. Reported rather than
+        // silently dropped, because "the chart shows 40 of 130 zones" is a
+        // budget limit and not a detection failure.
+        public int Capped;
         public int Objects;
 
         public int ChartBars;
@@ -62,19 +67,32 @@ namespace cAlgo.Robots
         private readonly PoiStyle _style;
         private readonly double _tickSize;
 
+        // Zones drawn per pass, from PoiSettings.MaxObjects. The detector
+        // deliberately does not enforce this: its zone list also feeds the
+        // confluence gate, and a drawing budget must never decide which zones
+        // the robot may trade. The cap therefore lives at the point where the
+        // budget is actually spent — on chart rectangles.
+        private readonly int _maxZones;
+
         private readonly HashSet<string> _live = new HashSet<string>(StringComparer.Ordinal);
         private readonly HashSet<string> _known = new HashSet<string>(StringComparer.Ordinal);
 
         public PoiRenderer(Chart chart, PoiStyle style)
-            : this(chart, style, 0.01)
+            : this(chart, style, 0.01, int.MaxValue)
         {
         }
 
         public PoiRenderer(Chart chart, PoiStyle style, double tickSize)
+            : this(chart, style, tickSize, int.MaxValue)
+        {
+        }
+
+        public PoiRenderer(Chart chart, PoiStyle style, double tickSize, int maxZones)
         {
             _chart = chart;
             _style = style;
             _tickSize = tickSize > 0 ? tickSize : 0.01;
+            _maxZones = maxZones > 0 ? maxZones : 1;
         }
 
         // ── Lifetime ──────────────────────────────────────────────────────
@@ -125,6 +143,16 @@ namespace cAlgo.Robots
                     report.Zones++;
                     TrackZoneTimes(report, zones[i]);
 
+                    // The snapshot is ordered newest origin first, so the budget
+                    // keeps the most recent zones on the chart. The rest are
+                    // counted as Capped instead of vanishing without an entry in
+                    // the log.
+                    if (i >= _maxZones)
+                    {
+                        report.Capped++;
+                        continue;
+                    }
+
                     if (Draw(zones[i], report))
                         report.Drawn++;
                 }
@@ -153,9 +181,10 @@ namespace cAlgo.Robots
             report.ChartBottomY = _chart.BottomY;
         }
 
-        /// Removes objects this renderer drew previously that the current
-        /// snapshot did not claim. Drives the object cap: when a zone falls out
-        /// of the lookback window its rectangles leave with it.
+        /// Removes objects this renderer drew previously that the current pass
+        /// did not claim — a zone that fell out of the lookback window, or one
+        /// the object budget now refuses to draw. Together with the budget in
+        /// Render that is what keeps the chart's object count bounded.
         private void EvictOrphans()
         {
             if (_known.Count > 0)

@@ -158,8 +158,30 @@ namespace cAlgo.Robots
         [Parameter("ATR Period", DefaultValue = 14, MinValue = 1)]
         public int AtrPeriod { get; set; }
 
-        [Parameter("SL ATR Multiplier", DefaultValue = 2.0, MinValue = 0.1)]
+        /// Only a FALLBACK now: the stop is placed beyond the most recent
+        /// confirmed swing low (buy) / swing high (sell) plus the swing buffer
+        /// below, and this multiple of ATR is used when no swing is confirmed
+        /// inside the lookback window (start-up, or a one-way run long enough
+        /// to leave no pivot).
+        [Parameter("SL ATR Multiplier (fallback)", DefaultValue = 2.0, MinValue = 0.1)]
         public double SlAtrMultiplier { get; set; }
+
+        /// Bars required on each side of a bar before its high/low counts as a
+        /// swing. Higher = fewer, more significant pivots, so the stop sits
+        /// further away.
+        [Parameter("SL Swing Strength (bars)", DefaultValue = 2, MinValue = 1)]
+        public int SlSwingStrength { get; set; }
+
+        /// How far back the scan looks for that pivot. Bounds the stop: the
+        /// most recent swing inside this window is used, never an older one.
+        [Parameter("SL Swing Lookback (bars)", DefaultValue = 50, MinValue = 5)]
+        public int SlSwingLookback { get; set; }
+
+        /// Distance kept between the swing and the stop, in ATR: stop = swing
+        /// high/low ± this × ATR, so the stop clears the wick that formed the
+        /// pivot instead of sitting on it.
+        [Parameter("SL Swing Buffer (ATR mult)", DefaultValue = 0.25, MinValue = 0.0)]
+        public double SlSwingBufferAtr { get; set; }
 
         [Parameter("TP ATR Multiplier", DefaultValue = 5.0, MinValue = 0.1)]
         public double TpAtrMultiplier { get; set; }
@@ -195,7 +217,11 @@ namespace cAlgo.Robots
         private double _sigMacroSma;
         private double _sigClosePrice;
         private double _sigAtrValue;
-        private double _sigStopLossDistance;
+
+        // Swing-based, so the two sides differ: the buy stop hangs below the
+        // most recent swing low, the sell stop above the most recent swing high.
+        private double _sigStopLossDistanceBuy;
+        private double _sigStopLossDistanceSell;
         private double _sigTakeProfitDistance;
         private bool _sigBullishCross;
         private bool _sigBearishCross;
@@ -308,12 +334,15 @@ namespace cAlgo.Robots
             if (_sigAtrValue <= 0)
                 return;
 
-            // FIX-11: respect the broker minimum stop distance — EA:540-544
+            // FIX-11: respect the broker minimum stop distance — EA:540-544.
+            // The swing stop is per side — below the swing low for a buy,
+            // above the swing high for a sell — so each is clamped on its own.
             double minStopDist = GetStopLevelDistance();
-            double stopLossDistance = _sigStopLossDistance;
+            double stopLossBuy = _sigStopLossDistanceBuy < minStopDist
+                ? minStopDist : _sigStopLossDistanceBuy;
+            double stopLossSell = _sigStopLossDistanceSell < minStopDist
+                ? minStopDist : _sigStopLossDistanceSell;
             double takeProfitDistance = _sigTakeProfitDistance;
-            if (stopLossDistance < minStopDist)
-                stopLossDistance = minStopDist;
             if (takeProfitDistance < minStopDist)
                 takeProfitDistance = minStopDist;
 
@@ -351,7 +380,7 @@ namespace cAlgo.Robots
                             return;
                         }
 
-                        if (SendMarketOrder(TradeType.Buy, stopLossDistance, takeProfitDistance,
+                        if (SendMarketOrder(TradeType.Buy, stopLossBuy, takeProfitDistance,
                                 adjustedRisk: RiskPercentPerTrade * GetAdjustedRiskMultiplier(),
                                 comment: "HMA Cross Buy"))
                         {
@@ -381,7 +410,7 @@ namespace cAlgo.Robots
                             return;
                         }
 
-                        if (SendMarketOrder(TradeType.Sell, stopLossDistance, takeProfitDistance,
+                        if (SendMarketOrder(TradeType.Sell, stopLossSell, takeProfitDistance,
                                 adjustedRisk: RiskPercentPerTrade * GetAdjustedRiskMultiplier(),
                                 comment: "HMA Cross Sell"))
                         {
@@ -795,7 +824,14 @@ namespace cAlgo.Robots
             _sigMacroSma = macroSma;
             _sigClosePrice = closePrice;
             _sigAtrValue = atrValue;
-            _sigStopLossDistance = atrValue * SlAtrMultiplier;
+
+            // Stops are swing-based and per side — a buy hangs its stop below
+            // the most recent swing low, a sell above the most recent swing
+            // high — so both distances are resolved while the snapshot is
+            // built. The old N × ATR distance survives as the fallback.
+            double atrFallback = atrValue * SlAtrMultiplier;
+            _sigStopLossDistanceBuy = GetSwingStopDistance(true, closePrice, atrValue, atrFallback);
+            _sigStopLossDistanceSell = GetSwingStopDistance(false, closePrice, atrValue, atrFallback);
             _sigTakeProfitDistance = atrValue * TpAtrMultiplier;
             _sigBullishCross = bullish;
             _sigBearishCross = bearish;
@@ -847,6 +883,84 @@ namespace cAlgo.Robots
                 valueSum += closes[chronologicalIndex - i] * (period - i);
 
             return weightSum > 0 ? valueSum / weightSum : 0.0;
+        }
+
+        // ── Swing-based stop loss ─────────────────────────────────────────
+        //
+        // The stop goes beyond the most recent confirmed swing low (buy) or
+        // swing high (sell), pushed clear of it by SL Swing Buffer × ATR,
+        // rather than a fixed multiple of ATR from the entry: the swing is the
+        // level whose failure disproves the trade, and the buffer keeps the
+        // stop out of the wick that formed the pivot.
+        //
+        // Bars are read by SHIFT — 0 is the forming bar, 1 the newest closed —
+        // and a swing needs SL Swing Strength bars on each side that did not
+        // exceed it, none of which may be the forming bar, so the newest
+        // possible anchor is shift strength + 1. The scan walks from there
+        // backwards and takes the first pivot whose stop level lies beyond the
+        // entry; a pivot on the wrong side of the price (a recent swing low
+        // above a buy) is not a stop reference, so the search simply continues
+        // to the next, older one.
+        //
+        // Returns atrFallback — the pre-swing N × ATR distance — when history
+        // is too short for a swing, no pivot is confirmed inside the lookback,
+        // or none of them lies beyond the entry. Never zero: CalculateDynamicVolume
+        // refuses to size a position from a stop distance of zero.
+        private double GetSwingStopDistance(bool isBuy, double closePrice, double atrValue,
+                                            double atrFallback)
+        {
+            if (atrValue <= 0 || Bars.Count < 2)
+                return atrFallback;
+
+            int strength = Math.Max(1, SlSwingStrength);
+            int newestAnchor = strength + 1;
+            int oldestAnchor = Bars.Count - 1 - strength;
+            int windowEnd = Math.Min(oldestAnchor, newestAnchor + Math.Max(1, SlSwingLookback) - 1);
+
+            double buffer = Math.Max(0, SlSwingBufferAtr) * atrValue;
+            DataSeries extremes = isBuy ? Bars.LowPrices : Bars.HighPrices;
+
+            for (int shift = newestAnchor; shift <= windowEnd; shift++)
+            {
+                double extreme = extremes.Last(shift);
+                bool confirmed = true;
+
+                for (int j = 1; j <= strength; j++)
+                {
+                    // Same polarity test as the POI detector's swing
+                    // primitives: a swing low must be strictly below both
+                    // neighbours, a swing high strictly above them.
+                    if (isBuy)
+                    {
+                        if (extreme >= extremes.Last(shift - j) ||
+                            extreme >= extremes.Last(shift + j))
+                        {
+                            confirmed = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        if (extreme <= extremes.Last(shift - j) ||
+                            extreme <= extremes.Last(shift + j))
+                        {
+                            confirmed = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (!confirmed)
+                    continue;
+
+                double level = isBuy ? extreme - buffer : extreme + buffer;
+                double distance = isBuy ? closePrice - level : level - closePrice;
+
+                if (distance > 0)
+                    return distance;
+            }
+
+            return atrFallback;
         }
 
         // ATR trailing stop — EA:887-934

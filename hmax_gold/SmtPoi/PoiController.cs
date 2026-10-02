@@ -70,7 +70,7 @@ namespace cAlgo.Robots
             // started with drawing on must still clean up after itself when the
             // robot is restarted with drawing off.
             _renderer?.Clear();
-            _renderer = new PoiRenderer(chart, style, tickSize);
+            _renderer = new PoiRenderer(chart, style, tickSize, settings.MaxObjects);
             _drawing = settings.DrawZones;
 
             // A new configuration may change the snapshot's size, so force the
@@ -184,7 +184,7 @@ namespace cAlgo.Robots
                  " to " + _snapshot.WindowNewest.ToString("yyyy-MM-dd HH:mm") +
                  ") found " + _snapshot.Zones.Count + " zone(s) (layers " + layers +
                  ", ATR " + _snapshot.AverageTrueRange.ToString("0.####") +
-                 ", " + _snapshot.ConfluenceZoneCount + " live/gateable)");
+                 ", " + _snapshot.ConfluenceZoneCount + " gateable)");
 
             if (!_drawing)
                 return;
@@ -196,8 +196,13 @@ namespace cAlgo.Robots
                 return;
             }
 
+            string budget = report.Capped > 0
+                ? "; " + report.Capped + " held back by the object budget"
+                : string.Empty;
+
             _log("SMT POI drawing: " + report.Drawn + " of " + report.Zones + " zone(s) drawn as " +
-                 report.Objects + " object(s); " + report.Clamped + " clamped to the chart's range.");
+                 report.Objects + " object(s); " + report.Clamped + " clamped to the chart's range" +
+                 budget + ".");
             _log("SMT POI chart: " + report.ChartBars + " bars from " +
                  report.ChartFirstOpen.ToString("yyyy-MM-dd HH:mm") + " to " +
                  report.ChartLastOpen.ToString("yyyy-MM-dd HH:mm") +
@@ -226,7 +231,7 @@ namespace cAlgo.Robots
                 if (!_warnedNoZones)
                 {
                     _warnedNoZones = true;
-                    _log("SMT POI: no live zones found; the confluence gate is allowing all entries.");
+                    _log("SMT POI: no zones count toward confluence; the gate is allowing all entries.");
                 }
 
                 return true;

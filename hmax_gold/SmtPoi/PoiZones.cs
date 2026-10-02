@@ -52,17 +52,17 @@ namespace cAlgo.Robots
         public double Top;
         public double Bottom;
 
-        // Price has already returned into the zone. Still drawn (so the chart
-        // shows where it was taken) but excluded from the confluence gate.
+        // Price has already returned into the zone. Marked so the chart's hover
+        // text can say where it was taken, but it gates entries exactly like a
+        // zone that was never touched: while price is inside it, it counts.
         public bool Mitigated;
 
-        // A liquidity level price has already traded beyond.
+        // Price has traded through the zone (a violated OB/FVG) or beyond the
+        // level (a swept EQH/EQL). Drawn, never dropped — but it does not gate,
+        // with one exception: a swept EQH/EQL may be traded back AT its own
+        // level, which the gate's proximity test enforces. A structure zone
+        // price ran through is spent and never gates again.
         public bool Swept;
-
-        public bool IsLive
-        {
-            get { return !Mitigated && !Swept; }
-        }
     }
 
     /// One detection pass, complete and self-contained.
@@ -77,8 +77,11 @@ namespace cAlgo.Robots
             new List<Poi>(), 0, 0, Array.Empty<double>(), Array.Empty<double>(),
             Array.Empty<double>(), Array.Empty<double>());
 
-        // Flat price bounds for the live zones only, split by side. Precomputed
-        // here so the gate is two array walks with no allocation, no predicate
+        // Flat price bounds for every zone that gates, split by side. Touched
+        // zones are in here; traded-through structure is not (see
+        // PoiDetector.CountsForGate), and the proximity test in HasConfluence
+        // is what limits swept liquidity to its own level. Precomputed here so
+        // the gate is two array walks with no allocation, no predicate
         // delegate and no LINQ — it runs inside OnTick's bar-close path.
         private readonly double[] _buyBottom;
         private readonly double[] _buyTop;
@@ -87,9 +90,11 @@ namespace cAlgo.Robots
 
         public List<Poi> Zones { get; }
 
-        // How many zones are eligible to gate an entry. Zero means the gate has
-        // nothing to say, which the controller treats as permissive rather than
-        // as "block everything" — see PoiController.HasConfluence.
+        // How many zones are eligible to gate an entry — touched zones and
+        // level-bound swept liquidity included, traded-through OB/FVG and
+        // anything whose Kind switch is off excluded. Zero means the gate has
+        // nothing to say, which the controller treats as permissive rather
+        // than as "block everything" — see PoiController.HasConfluence.
         public int ConfluenceZoneCount { get; }
 
         // Mean true range of the detection window, in price. The confluence
@@ -185,6 +190,10 @@ namespace cAlgo.Robots
 
         public int LookbackBars = 200;
         public int ExtendHours = 24;
+
+        // Ceiling on zones drawn per pass. Enforced by the renderer only —
+        // detection and the confluence gate see every zone found, whatever
+        // this is set to, so a rectangle budget cannot gate entries.
         public int MaxObjects = 120;
 
         // Confluence gate

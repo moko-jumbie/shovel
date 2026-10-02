@@ -145,12 +145,14 @@ namespace cAlgo.Robots
             DetectFairValueGaps(settings);
             DetectLiquidity(settings);
 
+            // Newest origin first, which is the order the renderer draws in and
+            // therefore the order the object budget is spent in.
             _zones.Sort(NewestOriginFirst);
 
-            int keep = Math.Min(_zones.Count, Math.Max(1, settings.MaxObjects));
-            if (keep < _zones.Count)
-                _zones.RemoveRange(keep, _zones.Count - keep);
-
+            // settings.MaxObjects is deliberately NOT enforced here. _zones feeds
+            // the confluence gate as well as the chart, so truncating it to a
+            // drawing budget made the rectangle limit decide which zones the
+            // robot was allowed to trade. The cap lives in PoiRenderer now.
             return BuildSnapshot(settings);
         }
 
@@ -378,14 +380,21 @@ namespace cAlgo.Robots
         // Walks forward from the bar that completed the zone looking for the
         // first time price came back into it, and classifies what happened:
         //
-        //   reached, not violated  -> tapped.  Kept and marked mitigated so the
-        //                             chart shows where it was taken, but the
-        //                             confluence gate ignores it.
-        //   violated               -> an order block that price pushed straight
-        //                             through has failed and is reborn as a
-        //                             breaker with the opposite polarity. Any
-        //                             other zone is simply spent and dropped.
+        //   reached, not violated  -> mitigated. Kept and marked so the chart
+        //                             shows where it was taken, and still
+        //                             counted by the confluence gate: a touch
+        //                             disqualifies nothing.
+        //   violated               -> traded through. An order block is reborn
+        //                             as a breaker when breakers are shown; any
+        //                             other zone (an FVG pushed through, an OB
+        //                             with breakers off) is marked Swept and
+        //                             never gates again.
         //   never reached          -> live. Extends its full ExtendHours.
+        //
+        // Nothing is dropped: both the touched and the traded-through zone stay
+        // on the chart. What differs is the gate — touched is tradable, swept
+        // is not, which used to be enforced by retiring the zone on its first
+        // contact (mitigation excluded it, violation removed it entirely).
         private void AppendZone(PoiKind kind, PoiSide side, int origin, int formationEnd,
                                 double top, double bottom, PoiSettings settings)
         {
@@ -413,11 +422,12 @@ namespace cAlgo.Robots
 
                 DateTime end = _times[j] + _barStep;
 
-                if (violated)
+                // The one conversion in the system: a violated order block comes
+                // back with the opposite polarity. Whether breakers are DRAWN is
+                // ShowBreakerBlocks; whether they COUNT for confluence is
+                // BreakersCount, decided later in CountsTowardConfluence.
+                if (violated && kind == PoiKind.OrderBlock && settings.ShowBreakerBlocks)
                 {
-                    if (kind != PoiKind.OrderBlock || !settings.ShowBreakerBlocks)
-                        return;
-
                     _zones.Add(new Poi
                     {
                         Kind = PoiKind.BreakerBlock,
@@ -427,20 +437,25 @@ namespace cAlgo.Robots
                         Top = top,
                         Bottom = bottom
                     });
+
+                    return;
                 }
-                else
+
+                // Both outcomes stay on the chart — the touch and the
+                // cut-through are shown where they happened — but they part
+                // ways at the gate: a touched zone still gates (a first touch
+                // disqualifies nothing), a zone price traded through does not.
+                _zones.Add(new Poi
                 {
-                    _zones.Add(new Poi
-                    {
-                        Kind = kind,
-                        Side = side,
-                        OriginTime = _times[origin],
-                        EndTime = end,
-                        Top = top,
-                        Bottom = bottom,
-                        Mitigated = true
-                    });
-                }
+                    Kind = kind,
+                    Side = side,
+                    OriginTime = _times[origin],
+                    EndTime = end,
+                    Top = top,
+                    Bottom = bottom,
+                    Mitigated = !violated,
+                    Swept = violated
+                });
 
                 return;
             }
@@ -463,10 +478,16 @@ namespace cAlgo.Robots
             int buyCount = 0;
             int sellCount = 0;
 
+            // Touched zones count — a first touch disqualifies nothing. Zones
+            // price traded through do not: a swept OB/FVG is refused outright,
+            // while a swept EQH/EQL stays in, because trading a sweep at its
+            // own level is the setup the level exists for. The gate's proximity
+            // test is what confines it to that band: away from the level it
+            // contributes nothing.
             for (int i = 0; i < _zones.Count; i++)
             {
                 Poi zone = _zones[i];
-                if (!zone.IsLive || !CountsTowardConfluence(settings, zone))
+                if (!CountsForGate(settings, zone))
                     continue;
 
                 if (zone.Side == PoiSide.Buy)
@@ -486,7 +507,7 @@ namespace cAlgo.Robots
             for (int i = 0; i < _zones.Count; i++)
             {
                 Poi zone = _zones[i];
-                if (!zone.IsLive || !CountsTowardConfluence(settings, zone))
+                if (!CountsForGate(settings, zone))
                     continue;
 
                 if (zone.Side == PoiSide.Buy)
@@ -511,6 +532,21 @@ namespace cAlgo.Robots
                                    // Buffer index 0 is the newest closed bar and _count - 1 the oldest, so the
                                    // window bounds are passed in that order.
                                    _times[_count - 1], _times[0], _count);
+        }
+
+        /// May this zone gate an entry at all?
+        ///
+        /// The one structural refusal first — a swept OB/FVG is spent and never
+        /// gates — then the kind switches. A swept EQH/EQL passes both and is
+        /// left to the proximity test, which confines it to its own level.
+        /// Mitigated (touched) zones are never refused: a touch disqualifies
+        /// nothing.
+        private static bool CountsForGate(PoiSettings settings, Poi zone)
+        {
+            if (zone.Swept && zone.Kind != PoiKind.EqualHighs && zone.Kind != PoiKind.EqualLows)
+                return false;
+
+            return CountsTowardConfluence(settings, zone);
         }
 
         private static bool CountsTowardConfluence(PoiSettings settings, Poi zone)

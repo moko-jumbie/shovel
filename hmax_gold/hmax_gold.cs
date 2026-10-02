@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using cAlgo.API;
 using cAlgo.API.Indicators;
-using cAlgo.API.Internals;
 
 namespace cAlgo.Robots
 {
     // Behavioural port of MT4EAv4.txt (HMA_Crossover_Smart_Run4_FIXED).
     //
-    // The trading paths are a faithful port; the CYBER MATRIX HUD is replaced by
-    // a holographic glass dashboard under Hud/ that renders the same five
-    // sections from a read-only snapshot. See Hud/HudBridge.cs.
+    // The trading paths are a faithful port. The EA's CYBER MATRIX dashboard is
+    // display-only and was not carried over, so nothing in this robot touches the
+    // chart, a timer, or any control tree.
     //
     // Parity notes (EA line references):
     //  - OnTick is used rather than OnBarClosed because the EA advances
@@ -42,7 +41,7 @@ namespace cAlgo.Robots
     //    are sized from the first qualifying tick of the bar rather than any
     //    qualifying tick. Leave it off to reproduce the EA.
     [Robot(TimeZone = TimeZones.EAfricaStandardTime, AccessRights = AccessRights.None)]
-    public partial class hmax_gold : Robot
+    public class hmax_gold : Robot
     {
         // ── Circuit Breaker Matrix ────────────────────────────────────────
         // ALL PARAMETERS DEFAULTED TO STARTING OPTIMIZATION SET.
@@ -169,77 +168,10 @@ namespace cAlgo.Robots
         [Parameter("Broker Min Stop Distance (price, 0=spread)", DefaultValue = 0.0, MinValue = 0.0)]
         public double BrokerMinStopDistance { get; set; }
 
-        // ── Holographic HUD ───────────────────────────────────────────────
-        //
-        // Display only. Nothing in the trading path reads any of these, so
-        // varying them in the optimiser cannot change a single trade — but see
-        // Hud In Backtest for why the dashboard is off during optimisation.
-        [Parameter("Show Hud", DefaultValue = false, Group = "Holographic HUD")]
-        public bool ShowHud { get; set; }
-
-        // The EA refreshed its dashboard from EventSetTimer. cTrader has the same
-        // primitive (Timer.Start / OnTimer), so the refresh is driven by a timer
-        // rather than by throttling OnTick: the trading hot path stays untouched
-        // and the panel keeps updating on a slow or flat market.
-        [Parameter("Hud Refresh Ms", DefaultValue = 500, MinValue = 100, MaxValue = 5000,
-                   Group = "Holographic HUD")]
-        public int HudRefreshMs { get; set; }
-
-        [Parameter("Hud Opacity", DefaultValue = 0.92, MinValue = 0.3, MaxValue = 1.0,
-                   Group = "Holographic HUD")]
-        public double HudOpacity { get; set; }
-
-        [Parameter("Hud Font Size", DefaultValue = 9, MinValue = 7, MaxValue = 14,
-                   Group = "Holographic HUD")]
-        public double HudFontSize { get; set; }
-
-        // An extra multiplier on top of the automatic fit, for tightening the
-        // panel further on a short chart pane. 1.0 leaves the fit in charge.
-        [Parameter("Hud Scale", DefaultValue = 1.0, MinValue = 0.7, MaxValue = 1.4,
-                   Group = "Holographic HUD")]
-        public double HudScale { get; set; }
-
-        [Parameter("Hud Font", DefaultValue = "Consolas", Group = "Holographic HUD")]
-        public string HudFont { get; set; }
-
-        [Parameter("Hud Show Right Rail", DefaultValue = true, Group = "Holographic HUD")]
-        public bool HudShowRightRail { get; set; }
-
-        [Parameter("Hud Left Margin", DefaultValue = 14, MinValue = 0, MaxValue = 200,
-                   Group = "Holographic HUD")]
-        public int HudLeftMargin { get; set; }
-
-        // Offset from the right edge. The default clears cTrader's price scale so
-        // the rail does not sit on top of the bid/ask axis.
-        [Parameter("Hud Rail Right Margin", DefaultValue = 68, MinValue = 0, MaxValue = 200,
-                   Group = "Holographic HUD")]
-        public int HudRailRightMargin { get; set; }
-
-        // Offset from the top edge, applied to both the panel and the rail. Keeps
-        // the HUD clear of the symbol/price header strip cTrader draws over the
-        // chart, which otherwise sits on top of the section titles.
-        [Parameter("Hud Top Inset", DefaultValue = 60, MinValue = 0, MaxValue = 400,
-                   Group = "Holographic HUD")]
-        public int HudTopInset { get; set; }
-
-        // cTrader's optimiser restarts the algo process for every pass, and this
-        // project treats process startup as being on the critical path. Building a
-        // few hundred controls per pass would be pure waste, so the dashboard is
-        // suppressed during backtests by default. Turn this on to watch it in
-        // cTrader's VISUAL backtest mode; it has no effect on results.
-        [Parameter("Hud In Backtest", DefaultValue = false, Group = "Holographic HUD")]
-        public bool HudInBacktest { get; set; }
-
         // ── Indicators ───────────────────────────────────────────────────
         private SimpleMovingAverage _smaFilter;
         private AverageDirectionalMovementIndexRating _adx;
         private AverageTrueRange _atr;
-
-        // Holographic dashboard. Null whenever the HUD is disabled, which keeps
-        // the timer callback a single null check in the common case.
-        private HudController _hud;
-        private HudSnapshot _hudFrame;
-        private bool _hudFitReported;
 
         // ── State tracking globals (EA:110-154) ─────────────────────────
         private DateTime _lastBarTime;
@@ -288,79 +220,8 @@ namespace cAlgo.Robots
 
             Positions.Closed += OnPositionClosedEvent;
 
-            StartHud();
-
             Print("HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on ",
                   SymbolName, " ", TimeFrame, " label='", Label, "'");
-        }
-
-        // ── Holographic HUD lifecycle ──────────────────────────────────────
-
-        // Attaches the dashboard and starts the refresh timer. The EA used
-        // EventSetTimer(RefreshRateSec); cTrader exposes the same thing, which
-        // keeps the refresh off the OnTick hot path entirely.
-        private void StartHud()
-        {
-            if (!ShowHud)
-                return;
-
-            // IsBacktesting covers both visual backtesting and the optimiser, and
-            // the two cannot be told apart from here. Hud In Backtest lets the
-            // visual run opt in while the optimiser stays clean.
-            if (IsBacktesting && !HudInBacktest)
-                return;
-
-            _hudFrame = new HudSnapshot();
-            _hud = new HudController(Chart, HudFont, HudFontSize, HudOpacity, HudShowRightRail,
-                                     HudScale, HudLeftMargin, HudRailRightMargin, HudTopInset);
-
-            _hud.Build();
-
-            // Paint the first frame before the first tick of the timer, so the
-            // panel is populated immediately rather than one interval later.
-            RefreshHud();
-
-            Timer.Start(TimeSpan.FromMilliseconds(HudRefreshMs));
-        }
-
-        // The panel is fitted to the chart pane, which on a short pane means some
-        // sections are left out. Saying so beats letting a trader wonder where the
-        // performance block went. Reported once the panel has actually attached,
-        // because the fit can be deferred if the chart is not laid out yet.
-        private void ReportHudFit()
-        {
-            HudParts omitted = _hud.OmittedParts;
-
-            if (omitted == HudParts.None && !_hud.FontReduced)
-                return;
-
-            string detail = "HUD: fitted to chart pane at " +
-                            HudSnapshot.Num(_hud.AppliedFontSize, 1) + "pt";
-
-            if (omitted != HudParts.None)
-                detail += ", omitted " + omitted;
-
-            Print(detail, ". Raise the pane height, or adjust 'Hud Font Size' / 'Hud Scale'.");
-        }
-
-        protected override void OnTimer()
-        {
-            RefreshHud();
-        }
-
-        private void RefreshHud()
-        {
-            if (_hud == null)
-                return;
-
-            FillHudSnapshot(_hudFrame);
-            _hud.Refresh(_hudFrame);
-
-            if (_hud.IsBuilt && !_hudFitReported)
-            {
-                _hudFitReported = true;
-                ReportHudFit();
-            }
         }
 
         protected override void OnTick()
@@ -543,19 +404,6 @@ namespace cAlgo.Robots
         protected override void OnStop()
         {
             Positions.Closed -= OnPositionClosedEvent;
-
-            // Only touch the timer if StartHud actually started it, so a run with
-            // the HUD disabled never stops a timer it does not own. Stopping
-            // before the controls are removed means no refresh can fire against a
-            // detached control tree.
-            if (_hud != null)
-            {
-                Timer.Stop();
-                _hud.Dispose();
-                _hud = null;
-            }
-
-            _hudFrame = null;
         }
 
         private void ReleaseEvaluationLatch()

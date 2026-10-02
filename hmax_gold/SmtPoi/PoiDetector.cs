@@ -377,31 +377,143 @@ namespace cAlgo.Robots
 
         // ── Shared zone registration ─────────────────────────────────────
         //
-        // Walks forward from the bar that completed the zone looking for the
-        // first time price came back into it, and classifies what happened:
+        // Scans forward from the bar that completed the zone and classifies
+        // what price did to it — over the zone's whole life, not at its first
+        // contact alone, because a touch no longer retires a zone:
         //
-        //   reached, not violated  -> mitigated. Kept and marked so the chart
+        //   never reached          -> live. Extends its full ExtendHours.
+        //   touched, never cut     -> mitigated. Kept and marked so the chart
         //                             shows where it was taken, and still
         //                             counted by the confluence gate: a touch
         //                             disqualifies nothing.
-        //   violated               -> traded through. An order block is reborn
-        //                             as a breaker when breakers are shown; any
-        //                             other zone (an FVG pushed through, an OB
-        //                             with breakers off) is marked Swept and
-        //                             never gates again.
-        //   never reached          -> live. Extends its full ExtendHours.
+        //   traded through         -> swept. At the FIRST contact an order
+        //                             block is reborn as a breaker instead (the
+        //                             one conversion in the system); every
+        //                             other case — an FVG pushed through, an OB
+        //                             with breakers off, or any of them touched
+        //                             first and cut through later — is marked
+        //                             Swept and never gates again.
         //
         // Nothing is dropped: both the touched and the traded-through zone stay
         // on the chart. What differs is the gate — touched is tradable, swept
         // is not, which used to be enforced by retiring the zone on its first
-        // contact (mitigation excluded it, violation removed it entirely).
+        // contact (mitigation excluded it, violation removed it entirely, so a
+        // zone touched at 50 and cut through at 90 kept gating).
         private void AppendZone(PoiKind kind, PoiSide side, int origin, int formationEnd,
                                 double top, double bottom, PoiSettings settings)
         {
             if (top - bottom <= 0)
                 return;
 
-            for (int j = formationEnd - 1; j >= 0; j--)
+            int contact;
+            bool contactViolated;
+            int sweep;
+
+            ScanContact(formationEnd - 1, side, top, bottom,
+                        out contact, out contactViolated, out sweep);
+
+            if (contact < 0)
+            {
+                _zones.Add(new Poi
+                {
+                    Kind = kind,
+                    Side = side,
+                    OriginTime = _times[origin],
+                    EndTime = _times[origin] + _extend,
+                    Top = top,
+                    Bottom = bottom
+                });
+
+                return;
+            }
+
+            DateTime contactEnd = _times[contact] + _barStep;
+
+            // The one conversion in the system: a violated order block comes
+            // back with the opposite polarity. Whether breakers are DRAWN is
+            // ShowBreakerBlocks; whether they COUNT for confluence is
+            // BreakersCount, decided later in CountsTowardConfluence. Only the
+            // first contact converts: an OB that was retested first and cut
+            // through later stays the same failed OB, not a breaker.
+            if (contactViolated && kind == PoiKind.OrderBlock && settings.ShowBreakerBlocks)
+            {
+                AppendBreaker(origin, side, top, bottom, contact, contactEnd);
+                return;
+            }
+
+            // Both outcomes stay on the chart — the touch and the cut-through
+            // are shown where they happened — but they part ways at the gate: a
+            // zone price ever traded through does not gate, a zone that was
+            // only touched still does. An earlier touch does not shield a later
+            // cut-through: the sweep wins whenever it happened.
+            _zones.Add(new Poi
+            {
+                Kind = kind,
+                Side = side,
+                OriginTime = _times[origin],
+                EndTime = sweep >= 0 ? _times[sweep] + _barStep : contactEnd,
+                Top = top,
+                Bottom = bottom,
+                Mitigated = sweep < 0,
+                Swept = sweep >= 0
+            });
+        }
+
+        // The breaker's own life. Born at the bar where the parent order block
+        // was cut through, so that bar — and everything the OB scan already
+        // measured — cannot count as the BREAKER being swept: the scan starts
+        // at the bar before it and asks the same questions with flipped
+        // polarity:
+        //
+        //   never reached          -> live from birth, EndTime = the birth bar.
+        //   touched                -> mitigated breaker, still gates.
+        //   band traded through    -> Swept. CountsForGate then refuses it: a
+        //                             breaker whose own band price ran through
+        //                             is spent, exactly like any swept OB/FVG,
+        //                             and never gates again.
+        private void AppendBreaker(int origin, PoiSide obSide, double top, double bottom,
+                                   int birthBar, DateTime birthEnd)
+        {
+            PoiSide side = obSide == PoiSide.Buy ? PoiSide.Sell : PoiSide.Buy;
+
+            int contact;
+            int sweep;
+
+            ScanContact(birthBar - 1, side, top, bottom, out contact, out _, out sweep);
+
+            _zones.Add(new Poi
+            {
+                Kind = PoiKind.BreakerBlock,
+                Side = side,
+                OriginTime = _times[origin],
+                EndTime = sweep >= 0 ? _times[sweep] + _barStep
+                         : contact >= 0 ? _times[contact] + _barStep
+                         : birthEnd,
+                Top = top,
+                Bottom = bottom,
+                Mitigated = contact >= 0 && sweep < 0,
+                Swept = sweep >= 0
+            });
+        }
+
+        // Walks forward from `start` — the bar after the zone completed, or the
+        // bar before a breaker's birth — looking for contact with the band:
+        //
+        //   firstContact   first bar price came back into it (-1 if never).
+        //   firstViolated  whether that first bar traded THROUGH it, which is
+        //                  what converts an order block into a breaker.
+        //   sweepBar       earliest bar that traded through the whole band, an
+        //                  earlier touch notwithstanding (-1 if never). The
+        //                  walk runs from older bars to newer ones, so the
+        //                  first violation found is the earliest in time.
+        private void ScanContact(int start, PoiSide side, double top, double bottom,
+                                 out int firstContact, out bool firstViolated, out int sweepBar)
+        {
+            firstContact = -1;
+            firstViolated = false;
+            sweepBar = -1;
+
+            for (int j = start; j >= 0; j--)
             {
                 bool reached;
                 bool violated;
@@ -420,55 +532,18 @@ namespace cAlgo.Robots
                 if (!reached)
                     continue;
 
-                DateTime end = _times[j] + _barStep;
-
-                // The one conversion in the system: a violated order block comes
-                // back with the opposite polarity. Whether breakers are DRAWN is
-                // ShowBreakerBlocks; whether they COUNT for confluence is
-                // BreakersCount, decided later in CountsTowardConfluence.
-                if (violated && kind == PoiKind.OrderBlock && settings.ShowBreakerBlocks)
+                if (firstContact < 0)
                 {
-                    _zones.Add(new Poi
-                    {
-                        Kind = PoiKind.BreakerBlock,
-                        Side = side == PoiSide.Buy ? PoiSide.Sell : PoiSide.Buy,
-                        OriginTime = _times[origin],
-                        EndTime = end,
-                        Top = top,
-                        Bottom = bottom
-                    });
-
-                    return;
+                    firstContact = j;
+                    firstViolated = violated;
                 }
 
-                // Both outcomes stay on the chart — the touch and the
-                // cut-through are shown where they happened — but they part
-                // ways at the gate: a touched zone still gates (a first touch
-                // disqualifies nothing), a zone price traded through does not.
-                _zones.Add(new Poi
+                if (violated)
                 {
-                    Kind = kind,
-                    Side = side,
-                    OriginTime = _times[origin],
-                    EndTime = end,
-                    Top = top,
-                    Bottom = bottom,
-                    Mitigated = !violated,
-                    Swept = violated
-                });
-
-                return;
+                    sweepBar = j;
+                    return;
+                }
             }
-
-            _zones.Add(new Poi
-            {
-                Kind = kind,
-                Side = side,
-                OriginTime = _times[origin],
-                EndTime = _times[origin] + _extend,
-                Top = top,
-                Bottom = bottom
-            });
         }
 
         // ── Snapshot assembly ────────────────────────────────────────────
@@ -479,11 +554,11 @@ namespace cAlgo.Robots
             int sellCount = 0;
 
             // Touched zones count — a first touch disqualifies nothing. Zones
-            // price traded through do not: a swept OB/FVG is refused outright,
-            // while a swept EQH/EQL stays in, because trading a sweep at its
-            // own level is the setup the level exists for. The gate's proximity
-            // test is what confines it to that band: away from the level it
-            // contributes nothing.
+            // price traded through do not: a swept OB/FVG/breaker is refused
+            // outright, while a swept EQH/EQL stays in, because trading a sweep
+            // at its own level is the setup the level exists for. The gate's
+            // proximity test is what confines it to that band: away from the
+            // level it contributes nothing.
             for (int i = 0; i < _zones.Count; i++)
             {
                 Poi zone = _zones[i];
@@ -536,11 +611,11 @@ namespace cAlgo.Robots
 
         /// May this zone gate an entry at all?
         ///
-        /// The one structural refusal first — a swept OB/FVG is spent and never
-        /// gates — then the kind switches. A swept EQH/EQL passes both and is
-        /// left to the proximity test, which confines it to its own level.
-        /// Mitigated (touched) zones are never refused: a touch disqualifies
-        /// nothing.
+        /// The one structural refusal first — a swept OB/FVG/breaker is spent
+        /// and never gates — then the kind switches. A swept EQH/EQL passes
+        /// both and is left to the proximity test, which confines it to its own
+        /// level. Mitigated (touched, never traded through) zones are never
+        /// refused: a touch disqualifies nothing.
         private static bool CountsForGate(PoiSettings settings, Poi zone)
         {
             if (zone.Swept && zone.Kind != PoiKind.EqualHighs && zone.Kind != PoiKind.EqualLows)

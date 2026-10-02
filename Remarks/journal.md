@@ -229,3 +229,21 @@ The previous entry's rule needed one refinement, and the stop rule was replaced 
 Because the stop is now per side, `_sigStopLossDistance` became `_sigStopLossDistanceBuy` / `_sigStopLossDistanceSell`, each clamped to the broker minimum on its own before the send. Sizing is untouched: `CalculateDynamicVolume` still sizes off the stop distance, so a pivot further away simply buys fewer units for the same risk %.
 
 Watch on the next run: stop distances should cluster just past pivots instead of sitting at a fixed ATR multiple, the `Lot floor` warning should appear when a distant pivot spreads the same risk money over a wider stop, and swept-through zones should be visible on the chart without ever producing an entry.
+## Swept breakers and touched-then-swept zones stop gating
+
+`The cBot should not trade swept breakers.` Two holes, one fix, both in `AppendZone`.
+
+**The breaker hole.** A breaker is born when its parent order block is cut through, and it was created *at that bar* with `Swept = false`, `Mitigated = false`, and the scan returned immediately - nothing ever looked at the breaker's own band again. `CountsForGate` already refuses any swept zone that is not EQH/EQL, so the refusal existed; the flag never did. A breaker whose band price traded through the bar after it formed kept gating until it scrolled out of the lookback.
+
+**The first-contact hole.** `AppendZone` stopped at the first bar that reached the zone. A zone touched at bar 50 and cut through at bar 90 stayed `Mitigated = true` and kept gating, though by then it is a swept zone - touched is tradable, swept is not. The early exit had been correct only while a touch retired the zone.
+
+The fix is one scan used by both paths: `ScanContact(start, side, top, bottom, out firstContact, out firstViolated, out sweepBar)` walks forward from the bar after the zone completed - or, for a breaker, from the bar *before* its birth - recording the first contact and continuing until the earliest bar that traded **through** the whole band. From older bars toward newer ones, so the first violation found is the earliest one in time.
+
+- `AppendZone` - untouched is still live with `EndTime = origin + extend`; a first contact that is a violation of an OB with `Show Breaker Blocks` on still converts (and only that first contact converts); everything else carries `Swept = sweepBar >= 0` with `EndTime` moved to the cut-through, and `Mitigated` only when the zone was touched and never cut. An earlier touch no longer shields a later cut-through.
+- New `AppendBreaker` - the parent OB's violation is the breaker's *birth*, not its sweep, so its scan starts one bar earlier. Untouched is live from birth (`EndTime` unchanged, the birth bar); touched is a mitigated breaker that still gates; a band traded through is `Swept`, and the existing structural refusal in `CountsForGate` keeps it out of the confluence - no gate-side change was needed.
+
+Conversion stays first-contact-only: an OB retested first and cut through later is the same failed OB, not a breaker - a breaker forms from an immediate failure, not from a retest that later fails. EQH/EQL are untouched: a level has no touch state, `beyond the level` is the only sweep, and trading back AT the level still counts.
+
+Cost: a touched zone now scans to the oldest bar instead of stopping at first contact, which untouched zones already did, so the worst case is unchanged.
+
+Watch on the next run: breakers and zones whose hover text reads `swept` should never produce an entry - including ones that were touched before they were cut - while `mitigated` and `live` zones gate as before; entry counts should drop only in those swept cases.

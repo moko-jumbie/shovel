@@ -52,16 +52,19 @@ namespace cAlgo.Robots
         public double Top;
         public double Bottom;
 
-        // Price has already returned into the zone. Marked so the chart's hover
-        // text can say where it was taken, but it gates entries exactly like a
-        // zone that was never touched: while price is inside it, it counts.
+        // Price has already returned into the zone and never traded through it
+        // afterwards. Marked so the chart's hover text can say where it was
+        // taken, and it gates entries exactly like a zone that was never
+        // touched: while price is inside it, it counts. Mutually exclusive
+        // with Swept — a zone cut through later stops being mitigated.
         public bool Mitigated;
 
-        // Price has traded through the zone (a violated OB/FVG) or beyond the
-        // level (a swept EQH/EQL). Drawn, never dropped — but it does not gate,
-        // with one exception: a swept EQH/EQL may be traded back AT its own
-        // level, which the gate's proximity test enforces. A structure zone
-        // price ran through is spent and never gates again.
+        // Price has traded through the zone (a violated OB/FVG/breaker) or
+        // beyond the level (a swept EQH/EQL). Drawn, never dropped — but it
+        // does not gate, with one exception: a swept EQH/EQL may be traded
+        // back AT its own level, which the gate's proximity test enforces. A
+        // structure zone price ran through at any point — breaker bands
+        // included — is spent and never gates again.
         public bool Swept;
     }
 

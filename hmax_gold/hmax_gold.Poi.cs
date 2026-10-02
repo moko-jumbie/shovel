@@ -36,11 +36,6 @@ namespace cAlgo.Robots
         [Parameter("POI Extend (hours)", DefaultValue = 24, MinValue = 1, Group = "SMT POI")]
         public int PoiExtendHours { get; set; }
 
-        /// Hard ceiling on chart rectangles: a rendered zone can be a body, an
-        /// outline and a label, so the zone budget is deliberately a third of
-        /// the object budget. Drawing only — detection and the confluence gate
-        /// see every zone found regardless of this, so lowering it cannot stop
-        /// the robot from trading inside a zone it is not showing.
         [Parameter("Max POI Objects", DefaultValue = 120, MinValue = 3, Group = "SMT POI")]
         public int MaxPoiObjects { get; set; }
 

@@ -41,7 +41,7 @@ namespace cAlgo.Robots
     //    are sized from the first qualifying tick of the bar rather than any
     //    qualifying tick. Leave it off to reproduce the EA.
     [Robot(TimeZone = TimeZones.EAfricaStandardTime, AccessRights = AccessRights.None)]
-    public class hmax_gold : Robot
+    public partial class hmax_gold : Robot
     {
         // ── Circuit Breaker Matrix ────────────────────────────────────────
         // ALL PARAMETERS DEFAULTED TO STARTING OPTIMIZATION SET.
@@ -220,6 +220,8 @@ namespace cAlgo.Robots
 
             Positions.Closed += OnPositionClosedEvent;
 
+            InitializePoi();
+
             Print("HMA Crossover port of HMA_Crossover_Smart_Run4_FIXED started on ",
                   SymbolName, " ", TimeFrame, " label='", Label, "'");
         }
@@ -228,6 +230,11 @@ namespace cAlgo.Robots
         {
             // Invalidates the Server.Time memo for this tick.
             _tickId++;
+
+            // 0. SMT / ICT areas of interest. Detection runs only when the source
+            // timeframe opens a new bar, so this is a null check and a single
+            // DateTime read on every other tick.
+            RefreshPoi();
 
             // 1. Dynamic trailing stop (every tick) — EA:440
             ApplyAtrTrailingStop();
@@ -328,7 +335,12 @@ namespace cAlgo.Robots
             // them cannot change the outcome.
             if (isBullishCross)
             {
-                if (!UseSmaFilter || _sigClosePrice > _sigMacroSma)
+                // The confluence gate sits alongside the SMA filter rather than
+                // beside the cooldown: both inputs are cached for the whole bar,
+                // so failing here cannot change later in this bar and must NOT
+                // release the latch the way a failed send does.
+                if ((!UseSmaFilter || _sigClosePrice > _sigMacroSma) &&
+                    AllowsPoiEntry(_sigClosePrice, true))
                 {
                     // FIX-8: the opposite side is NOT force-closed.
                     if (CountOpenPositions(TradeType.Buy) == 0)
@@ -358,7 +370,8 @@ namespace cAlgo.Robots
             }
             else if (isBearishCross)
             {
-                if (!UseSmaFilter || _sigClosePrice < _sigMacroSma)
+                if ((!UseSmaFilter || _sigClosePrice < _sigMacroSma) &&
+                    AllowsPoiEntry(_sigClosePrice, false))
                 {
                     if (CountOpenPositions(TradeType.Sell) == 0)
                     {
@@ -404,6 +417,8 @@ namespace cAlgo.Robots
         protected override void OnStop()
         {
             Positions.Closed -= OnPositionClosedEvent;
+
+            ShutdownPoi();
         }
 
         private void ReleaseEvaluationLatch()

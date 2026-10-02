@@ -94,3 +94,99 @@ Working with Kit taught me something - I was making "lottery tickets" and chasin
 Forward testing today, the XTIUSD settings are doing well, but it is too soon to call it a success. All the others are a mixed bag. One snag - MT4 is printing 5min bars as XX:01, XX:06... on XAUUSD. This bug caused MT4 to take a (losing) trade at 09:31 that cTrader did not enter. Additionally, MT4 trades are 1 minute "late".
 I saved the XTI London results [Test Run\XTI-multi-dim-London.optres] and the multi-dimentional run settings in the repo [Test Run\START-h.optset]. Kit, I'm guessing you have more compute power to space the testing out a little finer, but even these found good sets. Give your opinion.
 Going forward, I think we should adopt this multi-dimentional method. The downside is one session&symbol would (maybe?) take a long time. We can shedule 1 per hour on the weekends when market is closed. When we determine decay, we can change to every X weekends, or when Y happens.
+
+# 2026-10-02
+
+Added H1 areas of interest (order blocks, fair value gaps, breaker blocks, EQH/EQL) to the cTrader port. They are drawn on the M5 chart with plain chart objects and can also gate entries.
+
+**Important for the optimization record:** every result in this journal was measured with the POI gate off, and the gate is off by default (`Use POI Confluence Filter` = false). Turning it on changes which trades are taken, so the settings settled above are only valid for an ungated run. If I want gated results, that is a fresh optimization pass, not a re-use of these numbers.
+
+Defaults that keep the trading path identical to before: `Draw SMT POIs` false, `Use POI Confluence Filter` false. With both off the OnTick cost is a single null check.
+
+Design notes for whoever picks this up:
+- Detection reads only closed H1 bars and reruns once per H1 bar close, so there is no look-ahead and the per-tick cost is one DateTime read.
+- A zone's chart-object name is derived from its origin bar, kind and side. Re-rendering updates the same objects instead of stacking new ones, and zones that stop being detected take their objects with them.
+- Cleanup only ever touches objects prefixed `SMTPOI_`. Never `Chart.RemoveAllObjects` on a shared chart.
+
+Verified outside cTrader with a small harness (47 assertions over synthetic bars): order block detection, breaker conversion on violation, FVG bounds, equal highs, swept levels, mitigated zones excluded from the gate, object reuse and orphan eviction across repeated renders, and that a different forming bar produces an identical snapshot.
+
+Two real bugs were found and fixed by that harness, both index-direction errors that produced plausible-looking but wrong output rather than exceptions:
+- True range was reading the previous close from a slot the loop had not written yet, so every ATR-based threshold (OB impulse, FVG gap, EQH tolerance, confluence proximity) was measuring against zero. ATR came out ~97 on a 99-105 price range.
+- The liquidity sweep scan ran from the oldest bar instead of the newest, so it never saw the post-formation take-out that is the whole point of the level.
+
+## Nothing was drawn
+
+First run with `Draw SMT POIs` on produced an empty chart. Cause was in the parameter guards, not the detector:
+
+- `POI Timeframe` is a `TimeFrame`, which is a **reference type** in the cTrader API, and `TimeFrame.Hour` is a static property rather than a const, so it cannot go in `DefaultValue`. With no default in the attribute the parameter arrived as `null`, and the guard read `null` as "not a higher timeframe" and disabled the whole feature. Compounding it, `null <= TimeFrame.Minute` evaluates to **False**, so the comparison half of that guard never actually tested anything useful - the null check was the only thing firing, and it fired for the wrong reason.
+- Fixed by defaulting an unset or `Minute` value to H1 with an explicit log line, and by only treating a timeframe as invalid when it is genuinely not above the chart's.
+- Zones were also drawn on **negative ZIndex** layers (body -10, border -9, label -8). cTrader documents ZIndex only as ordering between chart objects and says nothing about negative layers compositing above the chart background, so a negative layer can render invisibly - which looks identical to a detector that found nothing. Now 1/2/3.
+
+Two failure modes stayed silent and are now reported: chart drawing being suppressed during a backtest (`Draw POIs In Backtest` is off by default), and a detection pass that finds zero zones because every layer is off, the history is shorter than the detector's 20-bar minimum, or the thresholds cannot be met. The first pass now logs bar count, zone count, which layers were enabled, the ATR it computed and how many objects reached the chart, so the next "nothing appeared" is answerable from the log instead of by guesswork.
+
+## Nothing was visible even though objects existed
+
+With the switches on, the log reported `21 zone(s) ... 6 chart object(s)` and an empty chart. So the detector was working - 21 zones, ATR 18.75 on gold - and the renderer was not.
+
+Three separate defects stacked up:
+
+1. **Zones were anchored with H1 timestamps on an M5 chart.** The renderer called the `DateTime` overloads of `DrawRectangle`/`DrawText` and let cTrader resolve the position, with no check that the time is actually a bar on the chart's series. A higher-timeframe timestamp that does not land on a chart bar yields no object, and an object that was never created looks identical to one that is off screen. Zones are now resolved to bar indices on the chart's own series with `OpenTimes.GetIndexByTime(...)` and drawn through the `barIndex` overloads. Only a zone spanning a single chart bar still uses the `DateTime` overload, because a bar-index anchor would collapse it to zero width.
+2. **Bar indices run newest-first, so `from > to` for any zone that began in the past.** My first attempt at the fix tested `to > from` to decide whether the zone spanned more than one bar, which is false for essentially every historical zone - it quietly sent everything back down the broken `DateTime` path. The test is `to != from`. Caught by working the index arithmetic out against the stub rather than by running anything.
+3. **A level zone (EQH/EQL) has `top == bottom`.** A rectangle with no height can render as nothing at all. Every zone is now given at least 1/300th of the chart's visible price range as height, centred on the actual level, so a level reads as a thin band at any zoom.
+
+Also changed: orphan eviction now works from the names the renderer itself drew, not from enumerating `Chart.Objects`. cTrader documents `Objects` as `IReadOnlyList<ChartObject>` and does not say whether the list is limited to the visible range. If it is, a viewport-driven sweep would delete every zone that had scrolled out of view. `Clear()` still sweeps the chart by prefix so a restart cleans up after a previous session, and both are covered by tests.
+
+The draw log now states how many zones were drawn, how many were skipped as outside the chart's bars, and the chart's own bar range and visible price range:
+
+```
+SMT POI drawing: 19 of 21 zone(s) drawn as 57 object(s); 2 skipped as outside the chart.
+SMT POI chart: 14820 bars from 2026-08-27 00:00 to 2026-09-18 23:55, visible price 4280.5 to 4311.2
+```
+
+## The chart is much smaller than the lookback
+
+The next run reported `0 of 21 zone(s) drawn; 21 skipped as outside the chart`, with the reason right there in the following line:
+
+```
+SMT POI chart: 200 bars from 2026-09-09 11:25 to 2026-09-14 03:00
+```
+
+The chart holds **200 M5 bars**, which is about 16 trading hours - and most of the span shown is a weekend. The detector was looking back **200 H1 bars**, roughly 8 trading days. Those two numbers are not comparable, and almost every zone origin predates the chart's history.
+
+Two fixes:
+
+- **Zones are clamped into the chart's range instead of being dropped.** A zone that formed before the chart's first bar but is still unmitigated is still live and still worth seeing, so it is drawn from the chart's oldest bar. Dropping those hides exactly the long-lived order blocks that matter most, and did so silently. The log now reports how many zones were clamped.
+- **Stopped relying on `TimeSeries.GetIndexByTime`.** Its behaviour for a time that is not an exact bar open is not documented, and an unverified answer here is the same failure as no answer. The renderer now binary-searches the chart's `OpenTimes` itself (the array is newest-first, so it is sorted descending and the containing bar is the smallest index at or before the target). The search is asserted against every bar open and both boundaries.
+
+## The array order bug: zones dated 2013
+
+After the clamping fix the cBot still reported nonsense:
+
+```
+SMT POI: first pass over 43147 closed bars found 2 zone(s) (... ATR 31.463, 1 live/gateable)
+SMT POI chart: 36139 bars from 2026-04-01 07:05 to 2026-10-02 18:35
+SMT POI zones: oldest 2013-05-16 00:00, newest 2013-06-06 00:00
+```
+
+43147 H1 bars back from 2026-10 is roughly 4.9 years, and the two zones sat 13 years earlier still. The chart line is what gives the game away: 36139 M5 bars over six months is ~289 bars/day, so `OpenTimes[0]` is the **oldest** bar of the chart, 2026-04-01.
+
+**A series' raw arrays in cTrader are chronological - index 0 is the oldest bar - while a bar index counts back from the newest.** The two are not interchangeable. The detector was filling its window with `source.OpenTimes[firstClosed + i]`, which does not throw; it silently walks the *oldest* part of the history. With `POI Lookback Bars = 20` that is the first 21 bars of the series, and XAUUSD's earliest available data is May 2013. Hence zones dated 2013, all off-chart, and ATR 31.46 measured across gold's May-2013 crash.
+
+The renderer had the mirror-image bug: its binary search assumed a descending array, so `time >= OpenTimes[0]` was true for nearly every time and it returned bar 0 - every zone drawn on the most recent bar.
+
+Two fixes:
+
+- **Chronological index, converted explicitly.** Bar index `c` is chronological index `Count - 1 - c`, in both the detector and the renderer. The renderer's search now walks the array chronologically and converts to a bar index on the way out.
+- **The detector refuses a window that is not newest-first.** `_times[0] <= _times[n - 1]` returns an empty snapshot. A wrong array order does not fail loudly anywhere else: every "newer bar" walk in the swing, impulse and mitigation routines would simply run backwards through history and emit confidently wrong zones. No POIs is a neutral input to the gate; 2013 zones are not.
+
+The test harness had been hiding this. Its `Bars` stub reversed the incoming arrays into newest-first order with a comment claiming that was what cTrader does - so the stub encoded the same wrong assumption as the code it was testing, and every test passed. The stub now keeps the arrays chronological like the real API, which is what turned the bug red immediately. New tests pin every zone's `OriginTime` inside the requested window, assert the round trip between chronological and bar orderings, and check that a recent historical time does not collapse onto the newest bar.
+
+The log also had a contributing lie. It printed `_source.Count - 1` - the whole series - as the number of bars scanned, so a 20-bar lookback appeared to have scanned 43147 bars. It now reports the window actually inspected, alongside its oldest and newest bar times:
+
+```
+SMT POI: first pass over 20 of 43147 closed bars (2026-10-01 19:00 to 2026-10-02 18:00) found N zone(s)
+```
+
+## Lookback is still not comparable to the chart
+
+`POI Lookback Bars` is bounded by the source series, not by the chart, and the two are unrelated. If I want zones visible rather than clamped, I should bound the lookback to roughly the chart's own depth, or compare zone ages against the chart's first bar instead of a fixed bar count.
